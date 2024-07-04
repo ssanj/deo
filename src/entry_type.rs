@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EntryType {
   Session {
     path: PathBuf,
@@ -50,6 +50,31 @@ impl TryFrom<EntryType> for Session {
     }
   }
 }
+
+#[derive(Debug)]
+pub struct EncodeType {
+  pub path: PathBuf,
+  pub season: String,
+}
+
+impl TryFrom<EntryType> for EncodeType {
+    type Error = ();
+
+    fn try_from(value: EntryType) -> Result<Self, Self::Error> {
+      match value {
+        EntryType::Encode { path, season } => {
+          Ok(
+            EncodeType {
+              path,
+              season
+            }
+          )
+        },
+        _ => Err(()),
+    }
+  }
+}
+
 
 impl EntryType {
   pub fn new_session<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {

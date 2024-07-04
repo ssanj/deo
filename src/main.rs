@@ -5,7 +5,7 @@ use walkdir::WalkDir;
 use regex::Regex;
 use entry_type::EntryType;
 
-use crate::entry_type::{Session, SessionId};
+use crate::entry_type::{EncodeType, Session, SessionId};
 
 mod args;
 mod entry_type;
@@ -48,8 +48,8 @@ fn main() {
 
   let mut session_hash: HashMap<SessionId, Vec<Session>> = HashMap::new();
 
-  for session in sessions {
-    if let Ok(session_type) = <EntryType as TryInto<Session>>::try_into(session) {
+  for session in sessions.iter() {
+    if let Ok(session_type) = <EntryType as TryInto<Session>>::try_into(session.clone()) {
       let session_id = SessionId::new(&session_type.session);
       session_hash
         .entry(session_id)
@@ -58,7 +58,15 @@ fn main() {
     }
   }
 
+  let encode_values: Vec<_> =
+    sessions
+      .into_iter()
+      .filter_map(|s| <EntryType as TryInto<EncodeType>>::try_into(s).ok() )
+      .collect();
 
   println!("{}", session_names.join("\n"));
-  println!("{:?}", session_hash)
+  println!("{}", "session_hash:");
+  println!("{:?}", session_hash);
+  println!("{}", "encode dirs:");
+  println!("{:?}", encode_values);
 }
