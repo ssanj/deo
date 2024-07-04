@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
 use args::cli;
 use walkdir::WalkDir;
 use regex::Regex;
 use entry_type::EntryType;
+
+use crate::entry_type::{Session, SessionId};
 
 mod args;
 mod entry_type;
@@ -42,5 +46,19 @@ fn main() {
       .map(|s| format!("{:?}", s))
       .collect();
 
-  println!("{}", session_names.join("\n"))
+  let mut session_hash: HashMap<SessionId, Vec<Session>> = HashMap::new();
+
+  for session in sessions {
+    if let Ok(session_type) = <EntryType as TryInto<Session>>::try_into(session) {
+      let session_id = SessionId::new(&session_type.session);
+      session_hash
+        .entry(session_id)
+        .and_modify(|sv| sv.push(session_type.clone()))
+        .or_insert(vec!(session_type));
+    }
+  }
+
+
+  println!("{}", session_names.join("\n"));
+  println!("{:?}", session_hash)
 }
