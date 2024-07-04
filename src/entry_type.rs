@@ -24,21 +24,21 @@ impl SessionId {
 }
 
 #[derive(Debug, Clone)]
-pub struct Session {
+pub struct SessionType {
     pub path: PathBuf,
     pub session: String,
     pub episode: String,
     pub file: String
   }
 
-impl TryFrom<EntryType> for Session {
+impl TryFrom<EntryType> for SessionType {
   type Error = ();
 
   fn try_from(value: EntryType) -> Result<Self, Self::Error> {
     match value {
       EntryType::Session { path, session, episode, file } => {
         Ok(
-          Session {
+          SessionType {
             path,
             session,
             episode,
