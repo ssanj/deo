@@ -6,9 +6,11 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use args::cli;
 use entry_type::{EntryType, EncodeType, SessionType, SessionId};
 
+use crate::user_selection::{EncodeOption, Profile, UserSelection};
+
 mod args;
 mod entry_type;
-
+mod user_selection;
 
 fn main() {
   let args = cli::get_cli_args();
@@ -63,29 +65,59 @@ fn main() {
       .filter_map(|s| <EntryType as TryInto<EncodeType>>::try_into(s).ok() )
       .collect();
 
-  let mut options: Vec<String> =
+  let mut encode_options: Vec<EncodeOption> =
     encode_values
-      .iter()
-      .map(|v| format!("{}", v.season))
+      .into_iter()
+      .map(EncodeOption::Encode)
       .collect();
 
-  options.push("Skip".to_owned());
-  options.push("Done".to_owned());
+  encode_options.push(EncodeOption::Skip);
+  encode_options.push(EncodeOption::Done);
+
+  let profile_options =
+    vec![
+      Profile::Dvd,
+      Profile::Bluray
+    ];
+
+  let mut selections: Vec<UserSelection> = vec![];
 
   println!();
   for (session_id, session_files) in session_hash {
     println!("session_id: {}", session_id.id());
-    for file in  session_files {
+    for file in &session_files {
       println!(" - {}", file.file);
     }
 
-    let selection =
-      show_select(&options, &format!("Copy {} to: ", session_id.id())).unwrap();
-    println!()
+    let selection_encode_option =
+      show_select(&encode_options, &format!("Copy {} to: ", session_id.id())).unwrap();
+
+    match selection_encode_option {
+      EncodeOption::Encode(encode_type) => {
+        let selected_profile =
+          show_select(&profile_options, "Profile:").unwrap();
+
+        selections.push(UserSelection::new(session_files ,encode_type, selected_profile))
+      },
+      EncodeOption::Skip => (),
+      EncodeOption::Done => break,
+    }
+
+    println!();
+  }
+
+  println!("Your choices were:");
+
+  if selections.is_empty() {
+    println!("You made no choices")
+  } else {
+    for selection in &selections {
+      println!("  {}", selection)
+    }
   }
 }
 
-fn show_select(options: &[String], prompt: &str) -> Result<String, String> {
+fn show_select<'a, T: ToString>(options: &'a [T], prompt: &str) -> Result<&'a T, String> {
     FuzzySelect::with_theme(&ColorfulTheme::default())
       .with_prompt(prompt)
       .default(0)
@@ -93,9 +125,9 @@ fn show_select(options: &[String], prompt: &str) -> Result<String, String> {
       .interact()
       .map_err(|e| e.to_string())
       .and_then(|index| {
-          options
-            .get(index)
-            .ok_or_else(|| "Invalid selection index".to_owned())
-            .map(|v| v.to_owned())
+        options
+          .get(index)
+          .ok_or_else(|| "Invalid selection index".to_owned())
       })
 }
+
