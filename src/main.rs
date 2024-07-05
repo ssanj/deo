@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-
-use args::cli;
 use walkdir::WalkDir;
 use regex::Regex;
-use entry_type::EntryType;
+use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 
-use crate::entry_type::{EncodeType, SessionType, SessionId};
+use args::cli;
+use entry_type::{EntryType, EncodeType, SessionType, SessionId};
 
 mod args;
 mod entry_type;
@@ -64,9 +63,39 @@ fn main() {
       .filter_map(|s| <EntryType as TryInto<EncodeType>>::try_into(s).ok() )
       .collect();
 
-  println!("{}", session_names.join("\n"));
-  println!("{}", "session_hash:");
-  println!("{:?}", session_hash);
-  println!("{}", "encode dirs:");
-  println!("{:?}", encode_values);
+  let mut options: Vec<String> =
+    encode_values
+      .iter()
+      .map(|v| format!("{}", v.season))
+      .collect();
+
+  options.push("Skip".to_owned());
+  options.push("Done".to_owned());
+
+  println!();
+  for (session_id, session_files) in session_hash {
+    println!("session_id: {}", session_id.id());
+    for file in  session_files {
+      println!(" - {}", file.file);
+    }
+
+    let selection =
+      show_select(&options, &format!("Copy {} to: ", session_id.id())).unwrap();
+    println!()
+  }
+}
+
+fn show_select(options: &[String], prompt: &str) -> Result<String, String> {
+    FuzzySelect::with_theme(&ColorfulTheme::default())
+      .with_prompt(prompt)
+      .default(0)
+      .items(&options)
+      .interact()
+      .map_err(|e| e.to_string())
+      .and_then(|index| {
+          options
+            .get(index)
+            .ok_or_else(|| "Invalid selection index".to_owned())
+            .map(|v| v.to_owned())
+      })
 }

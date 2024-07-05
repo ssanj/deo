@@ -21,6 +21,10 @@ impl SessionId {
   pub fn new(value: &str) -> Self {
     Self(value.to_string())
   }
+
+  pub fn id(&self) -> &str {
+    &self.0
+  }
 }
 
 #[derive(Debug, Clone)]
