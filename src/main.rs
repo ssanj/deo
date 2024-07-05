@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
+use console::style;
 use walkdir::WalkDir;
 use regex::Regex;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
@@ -41,13 +42,7 @@ fn main() {
       })
       .collect();
 
-  let session_names: Vec<String> =
-    sessions
-      .iter()
-      .map(|s| format!("{:?}", s))
-      .collect();
-
-  let mut session_hash: HashMap<SessionId, Vec<SessionType>> = HashMap::new();
+  let mut session_hash: BTreeMap<SessionId, Vec<SessionType>> = BTreeMap::new();
 
   for session in sessions.iter() {
     if let Ok(session_type) = <EntryType as TryInto<SessionType>>::try_into(session.clone()) {
@@ -84,13 +79,13 @@ fn main() {
 
   println!();
   for (session_id, session_files) in session_hash {
-    println!("session_id: {}", session_id.id());
+    println!("{} has the following files:", style(session_id.id()).yellow().bold());
     for file in &session_files {
       println!(" - {}", file.file);
     }
 
     let selection_encode_option =
-      show_select(&encode_options, &format!("Copy {} to: ", session_id.id())).unwrap();
+      show_select(&encode_options, &format!("Copy {} files to: ", style(session_id.id()).yellow())).unwrap();
 
     match selection_encode_option {
       EncodeOption::Encode(encode_type) => {

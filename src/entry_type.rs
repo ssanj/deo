@@ -14,7 +14,7 @@ pub enum EntryType {
   },
 }
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
 pub struct SessionId(String);
 
 impl SessionId {

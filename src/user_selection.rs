@@ -35,12 +35,6 @@ impl fmt::Display for Profile {
   }
 }
 
-pub enum SessionEncodeMapping {
-  Encode(SessionType, EncodeType),
-  Skip,
-  Done
-}
-
 pub struct UserSelection<'a>(Vec<SessionType>, &'a EncodeType, &'a Profile);
 
 impl <'a> UserSelection<'a> {
