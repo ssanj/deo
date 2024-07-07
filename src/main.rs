@@ -3,6 +3,7 @@ use console::style;
 use walkdir::WalkDir;
 use regex::Regex;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
+use std::process::{Command, Stdio};
 
 use args::cli;
 use entry_type::{EntryType, EncodeType, SessionType, SessionId};
@@ -81,7 +82,7 @@ fn main() {
   for (session_id, session_files) in session_hash {
     println!("{} has the following files:", style(session_id.id()).yellow().bold());
     for file in &session_files {
-      println!(" - {}", file.file);
+      println!(" - {}", file.input_file);
     }
 
     let selection_encode_option =
@@ -118,11 +119,60 @@ fn main() {
 
     let continue_result = show_select(&continue_options, "Proceed with encoding selection?");
     match continue_result {
-      Ok(ContinueType::EncodeSelection) => println!("{}", "encoding..."),
+      Ok(ContinueType::EncodeSelection) => {
+        encode_selection(selections).unwrap()
+      },
       Ok(ContinueType::Cancel) => println!("{}", "canceling"),
       Err(_) => println!("{}", "quitting.."),
     }
   }
+}
+
+fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
+  println!("{}", "encoding...");
+  //handbreakcli
+  // --preset-import-file ~/Desktop/DVD\ -\ H265\ Apple\ Silicon\ HQ.json
+  // -Z "DVD - H265 Apple Silicon HQ"
+  // -i S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mkv
+  // -o S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mp4
+
+  // TODO: Source these from somewhere
+  let profile_file = "/Users/sanj/Desktop/DVD - H265 Apple Silicon HQ.json";
+  let profile_name = "DVD - H265 Apple Silicon HQ";
+
+  let mut cmd = Command::new("handbrakecli");
+
+  cmd
+    .arg("--preset-import-file")
+    .arg(profile_file)
+    .arg("-Z")
+    .arg(profile_name);
+
+  for selection in selections {
+    for input in selection.session_types() {
+      let input_file = &input.path;
+      let output_file = selection.encode_type().path.join(&input.output_file);
+
+      println!("calling: handbrakecli --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
+
+      let mut handbrake =
+        cmd
+          .arg("-i")
+          .arg(input_file)
+          .arg("-o")
+          .arg(output_file)
+          .stdout(Stdio::piped())
+          .spawn()
+          .expect("Failed to spawn handbrakecli");
+
+      let exit_status = handbrake.wait().expect("Could not get output");
+      let code = exit_status.code().expect("Could not get exit code");
+      println!("handbrake returned exit code: {}", code);
+
+    }
+  }
+
+  Ok(())
 }
 
 fn show_select<'a, T: ToString>(options: &'a [T], prompt: &str) -> Result<&'a T, String> {

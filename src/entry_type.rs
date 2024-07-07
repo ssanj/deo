@@ -32,7 +32,8 @@ pub struct SessionType {
     pub path: PathBuf,
     pub session: String,
     pub episode: String,
-    pub file: String
+    pub input_file: String,
+    pub output_file: String,
   }
 
 impl TryFrom<EntryType> for SessionType {
@@ -41,12 +42,21 @@ impl TryFrom<EntryType> for SessionType {
   fn try_from(value: EntryType) -> Result<Self, Self::Error> {
     match value {
       EntryType::Session { path, session, episode, file } => {
+        let output_file =
+          Path::new(&file)
+            .file_stem()
+            .map(|f| format!("{}.mp4", f.to_string_lossy()))
+            .expect("Could not get file stem");
+
+        let input_file = file;
+
         Ok(
           SessionType {
             path,
             session,
             episode,
-            file
+            input_file,
+            output_file,
           }
         )
       },

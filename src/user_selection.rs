@@ -41,6 +41,18 @@ impl <'a> UserSelection<'a> {
   pub fn new(session_types: Vec<SessionType>, encode_type: &'a EncodeType, profile: &'a Profile) -> Self {
     Self(session_types, encode_type, profile)
   }
+
+  pub fn session_types(&self) -> &[SessionType] {
+    &self.0
+  }
+
+  pub fn encode_type(&self) -> &EncodeType {
+    self.1
+  }
+
+  pub fn profile(&self) -> &Profile {
+    self.2
+  }
 }
 
 impl fmt::Display for UserSelection<'_> {
