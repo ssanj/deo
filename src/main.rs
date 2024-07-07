@@ -161,9 +161,20 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
           .arg(input_file)
           .arg("-o")
           .arg(output_file)
-          .stdout(Stdio::piped())
+          .stderr(Stdio::piped())
           .spawn()
           .expect("Failed to spawn handbrakecli");
+
+      use std::io::{BufReader, BufRead};
+      let out = handbrake.stderr.take().unwrap();
+      let stdout_reader = BufReader::new(out);
+      let lines = stdout_reader.lines();
+
+      println!("------------- {}", "before");
+      for line in lines {
+        println!("mine: {}", line.unwrap_or("???".to_owned()));
+      }
+      println!("------------- {}", "after");
 
       let exit_status = handbrake.wait().expect("Could not get output");
       let code = exit_status.code().expect("Could not get exit code");
