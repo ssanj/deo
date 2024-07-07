@@ -7,7 +7,7 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use args::cli;
 use entry_type::{EntryType, EncodeType, SessionType, SessionId};
 
-use crate::user_selection::{EncodeOption, Profile, UserSelection};
+use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
 
 mod args;
 mod entry_type;
@@ -108,6 +108,19 @@ fn main() {
   } else {
     for selection in &selections {
       println!("  {}", selection)
+    }
+
+    let continue_options =
+      [
+        ContinueType::EncodeSelection,
+        ContinueType::Cancel
+      ];
+
+    let continue_result = show_select(&continue_options, "Proceed with encoding selection?");
+    match continue_result {
+      Ok(ContinueType::EncodeSelection) => println!("{}", "encoding..."),
+      Ok(ContinueType::Cancel) => println!("{}", "canceling"),
+      Err(_) => println!("{}", "quitting.."),
     }
   }
 }

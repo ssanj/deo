@@ -49,3 +49,19 @@ impl fmt::Display for UserSelection<'_> {
       write!(f, "Copy {} -> {} with {} profile", session_type.first().unwrap().session, encode_type.season, profile)
   }
 }
+
+pub enum ContinueType {
+  EncodeSelection,
+  Cancel
+}
+
+impl fmt::Display for ContinueType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      let option = match self {
+        ContinueType::EncodeSelection => "Encode selection",
+        ContinueType::Cancel => "Cancel",
+      };
+
+      write!(f, "{}", option)
+    }
+}
