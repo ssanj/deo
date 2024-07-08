@@ -8,11 +8,12 @@ use std::process::{Command, Stdio};
 use args::cli;
 use entry_type::{EntryType, EncodeType, SessionType, SessionId};
 
-use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
+use crate::{hb_output_parser::parse, user_selection::{ContinueType, EncodeOption, Profile, UserSelection}};
 
 mod args;
 mod entry_type;
 mod user_selection;
+mod hb_output_parser;
 
 fn main() {
   let args = cli::get_cli_args();
@@ -153,26 +154,28 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
       let input_file = &input.path;
       let output_file = selection.encode_type().path.join(&input.output_file);
 
-      println!("calling: handbrakecli --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
+      println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
 
       let mut handbrake =
         cmd
+          .arg("--json")
           .arg("-i")
           .arg(input_file)
           .arg("-o")
           .arg(output_file)
-          .stderr(Stdio::piped())
+          .stdout(Stdio::piped())
+          .stderr(Stdio::null())
           .spawn()
           .expect("Failed to spawn handbrakecli");
 
       use std::io::{BufReader, BufRead};
-      let out = handbrake.stderr.take().unwrap();
+      let out = handbrake.stdout.take().unwrap();
       let stdout_reader = BufReader::new(out);
       let lines = stdout_reader.lines();
 
       println!("------------- {}", "before");
       for line in lines {
-        println!("mine: {}", line.unwrap_or("???".to_owned()));
+        parse(line.unwrap());
       }
       println!("------------- {}", "after");
 
