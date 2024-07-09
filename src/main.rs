@@ -8,7 +8,7 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use std::process::{Command, Stdio};
 
 use args::cli;
-use entry_type::{EntryType, EncodeDir, SessionType, SessionId};
+use entry_type::{EntryType, EncodeDir, RenameFile, SessionId};
 
 use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
 use crate::hb_output_parser::{parse, Output};
@@ -32,7 +32,7 @@ fn main() {
       .filter_map(|de| {
         if de.file_type().is_file() && rename_reg.is_match(de.path().to_str().unwrap()){
           if let Some((_, [session, episode, file])) = rename_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
-            Some(EntryType::new_session(de.path(), session, episode, file))
+            Some(EntryType::new_rename(de.path(), session, episode, file))
           } else {
             None
           }
@@ -69,10 +69,10 @@ fn main() {
       })
       .collect();
 
-  let mut session_hash: BTreeMap<SessionId, Vec<SessionType>> = BTreeMap::new();
+  let mut session_hash: BTreeMap<SessionId, Vec<RenameFile>> = BTreeMap::new();
 
   for session in sessions.iter() {
-    if let Ok(session_type) = <EntryType as TryInto<SessionType>>::try_into(session.clone()) {
+    if let Ok(session_type) = <EntryType as TryInto<RenameFile>>::try_into(session.clone()) {
       let session_id = session_type.clone().session;
       session_hash
         .entry(session_id)
@@ -184,9 +184,9 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
     .with_finish(indicatif::ProgressFinish::Abandon);
 
   for selection in selections {
-    for input in selection.session_types() {
+    for input in selection.rename_files() {
       let input_file = &input.path;
-      let output_file = selection.encode_type().path.join(&input.mp4_file);
+      let output_file = selection.encode_dir().path.join(&input.mp4_file);
 
       bar.set_prefix(input.mkv_file.clone());
       // Print this when --verbose is on

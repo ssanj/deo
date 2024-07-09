@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::entry_type::{EncodeDir, SessionId, SessionType};
+use crate::entry_type::{EncodeDir, SessionId, RenameFile};
 
 pub enum EncodeOption {
   Encode(EncodeDir),
@@ -35,22 +35,22 @@ impl fmt::Display for Profile {
   }
 }
 
-/// A Session has a SessionId and a list of files (SessionType)
+/// A Session has a SessionId and a list of files (RenameFile)
 pub struct Session {
   session_id: SessionId,
-  files: Vec<SessionType>,
+  files: Vec<RenameFile>,
 }
 
 impl Session {
 
-  pub fn new(session_id: SessionId, files: Vec<SessionType>) -> Self {
+  pub fn new(session_id: SessionId, files: Vec<RenameFile>) -> Self {
     Self {
       session_id,
       files
     }
   }
 
-  pub fn first(&self) -> Option<SessionType> {
+  pub fn first(&self) -> Option<RenameFile> {
     self.files.first().cloned()
   }
 }
@@ -62,7 +62,7 @@ pub struct UserSelection<'a> {
 }
 
 impl <'a> UserSelection<'a> {
-  pub fn new(session_id: SessionId, session_types: Vec<SessionType>, encode_dir: &'a EncodeDir, profile: &'a Profile) -> Self {
+  pub fn new(session_id: SessionId, session_types: Vec<RenameFile>, encode_dir: &'a EncodeDir, profile: &'a Profile) -> Self {
     let session = Session::new(session_id, session_types);
     Self {
       session,
@@ -71,11 +71,11 @@ impl <'a> UserSelection<'a> {
     }
   }
 
-  pub fn session_types(&self) -> &[SessionType] {
+  pub fn rename_files(&self) -> &[RenameFile] {
     &self.session.files
   }
 
-  pub fn encode_type(&self) -> &EncodeDir {
+  pub fn encode_dir(&self) -> &EncodeDir {
     &self.encode_dir
   }
 

@@ -3,7 +3,7 @@ use std::fmt;
 
 #[derive(Debug, Clone)]
 pub enum EntryType {
-  Session {
+  Rename {
 
     /// Full path to mkv file
     path: PathBuf,
@@ -51,7 +51,7 @@ impl fmt::Display for SessionId {
 }
 
 #[derive(Debug, Clone)]
-pub struct SessionType {
+pub struct RenameFile {
 
   /// Full path to mkv_file
   pub path: PathBuf,
@@ -69,12 +69,12 @@ pub struct SessionType {
   pub mp4_file: String,
 }
 
-impl TryFrom<EntryType> for SessionType {
+impl TryFrom<EntryType> for RenameFile {
   type Error = ();
 
   fn try_from(value: EntryType) -> Result<Self, Self::Error> {
     match value {
-      EntryType::Session { path, session, episode, file } => {
+      EntryType::Rename { path, session, episode, file } => {
         let output_path = Path::new(&file);
 
         let mp4_file =
@@ -86,7 +86,7 @@ impl TryFrom<EntryType> for SessionType {
         let mkv_file = file;
 
         Ok(
-          SessionType {
+          RenameFile {
             path,
             session,
             episode,
@@ -129,8 +129,8 @@ impl TryFrom<EntryType> for EncodeDir {
 
 
 impl EntryType {
-  pub fn new_session<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
-    EntryType::Session {
+  pub fn new_rename<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
+    EntryType::Rename {
       path: path.as_ref().to_owned(),
       session: SessionId::new(session),
       episode: episode.to_owned(),
