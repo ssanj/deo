@@ -69,6 +69,12 @@ pub struct RenameFile {
   pub mp4_file: String,
 }
 
+impl RenameFile {
+  pub fn session_id(&self) -> SessionId {
+    self.session.clone()
+  }
+}
+
 impl TryFrom<EntryType> for RenameFile {
   type Error = ();
 
@@ -100,7 +106,7 @@ impl TryFrom<EntryType> for RenameFile {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EncodeDir {
   pub path: PathBuf,
   pub season: String,

@@ -19,6 +19,7 @@ impl fmt::Display for EncodeOption {
   }
 }
 
+#[derive(Debug, Clone)]
 pub enum Profile {
   Dvd,
   Bluray
@@ -36,6 +37,7 @@ impl fmt::Display for Profile {
 }
 
 /// A Session has a SessionId and a list of files (RenameFile)
+#[derive(Debug, Clone)]
 pub struct Session {
   session_id: SessionId,
   files: Vec<RenameFile>,
@@ -50,33 +52,62 @@ impl Session {
     }
   }
 
-  pub fn first(&self) -> Option<RenameFile> {
-    self.files.first().cloned()
+  pub fn files(&self) -> &[RenameFile] {
+    &self.files
   }
 }
 
-pub struct UserSelection<'a> {
+pub struct SessionToEncodeDir {
+  session_id: SessionId,
   session: Session,
-  encode_dir: &'a EncodeDir,
-  profile: &'a Profile
+  encode_dir: EncodeDir
 }
 
-impl <'a> UserSelection<'a> {
-  pub fn new(session_id: SessionId, session_types: Vec<RenameFile>, encode_dir: &'a EncodeDir, profile: &'a Profile) -> Self {
-    let session = Session::new(session_id, session_types);
+impl SessionToEncodeDir {
+  pub fn new(session_id: SessionId, session: Session, encode_dir: EncodeDir) -> Self {
     Self {
+      session_id,
       session,
-      encode_dir,
+      encode_dir
+    }
+  }
+}
+
+impl SessionToEncodeDir {
+  pub fn session_id(&self) -> &SessionId {
+    &self.session_id
+  }
+
+  pub fn session(&self) -> &Session {
+    &self.session
+  }
+
+  pub fn encode_dir(&self) -> &EncodeDir {
+    &self.encode_dir
+  }
+}
+
+pub struct UserSelection {
+  session_id: SessionId,
+  session_to_encode_dir: SessionToEncodeDir,
+  profile: Profile
+}
+
+impl <'a> UserSelection {
+  pub fn new(session_id: SessionId, session_to_encode_dir: SessionToEncodeDir, profile: Profile) -> Self {
+    Self {
+      session_id,
+      session_to_encode_dir,
       profile
     }
   }
 
   pub fn rename_files(&self) -> &[RenameFile] {
-    &self.session.files
+    &self.session_to_encode_dir.session.files()
   }
 
   pub fn encode_dir(&self) -> &EncodeDir {
-    &self.encode_dir
+    &self.session_to_encode_dir.encode_dir
   }
 
   pub fn profile(&self) -> &Profile {
@@ -84,11 +115,10 @@ impl <'a> UserSelection<'a> {
   }
 }
 
-impl fmt::Display for UserSelection<'_> {
+impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let UserSelection { session, encode_dir, profile } = self;
-      let session_id = &session.session_id;
-      let season = &encode_dir.season;
+    let UserSelection { session_id, session_to_encode_dir, profile } = self;
+      let season = &session_to_encode_dir.encode_dir.season;
       write!(f, "Copy {} -> {} with {} profile", session_id, season, profile)
   }
 }

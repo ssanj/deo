@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -10,7 +10,7 @@ use std::process::{Command, Stdio};
 use args::cli;
 use entry_type::{EntryType, EncodeDir, RenameFile, SessionId};
 
-use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
+use crate::user_selection::{ContinueType, EncodeOption, Profile, Session, SessionToEncodeDir, UserSelection};
 use crate::hb_output_parser::{parse, Output};
 
 mod args;
@@ -21,23 +21,23 @@ mod hb_output_parser;
 fn main() {
   let args = cli::get_cli_args();
   println!("source: {}", &args.source.to_string_lossy());
-  let rename_reg = Regex::new(r"(session\d{1,})\/renames\/(S\d{2,}E\d{2,})\s-\s(.+.mkv)$").unwrap();
+  let rename_file_reg = Regex::new(r"(session\d{1,})\/renames\/(S\d{2,}E\d{2,})\s-\s(.+.mkv)$").unwrap();
   let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode\.txt$").unwrap();
-  let encode_reg = Regex::new(r".+\/(.+\s-\sSeason\s\d{2,})$").unwrap();
+  let encode_dir_reg = Regex::new(r".+\/(.+\s-\sSeason\s\d{2,})$").unwrap();
 
-  let sessions: Vec<EntryType> =
+  let entry_types: Vec<EntryType> =
     WalkDir::new(&args.source)
       .into_iter()
       .filter_map(|de| de.ok())
       .filter_map(|de| {
-        if de.file_type().is_file() && rename_reg.is_match(de.path().to_str().unwrap()){
-          if let Some((_, [session, episode, file])) = rename_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+        if de.file_type().is_file() && rename_file_reg.is_match(de.path().to_str().unwrap()){
+          if let Some((_, [session, episode, file])) = rename_file_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             Some(EntryType::new_rename(de.path(), session, episode, file))
           } else {
             None
           }
-        } /*else if de.file_type().is_dir() && encode_reg.is_match(de.path().to_str().unwrap()) {
-          if let Some((_, [season])) = encode_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+        } /*else if de.file_type().is_dir() && encode_dir_reg.is_match(de.path().to_str().unwrap()) {
+          if let Some((_, [season])) = encode_dir_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             Some(EntryType::new_encodes(de.path(), season))
           } else {
             None
@@ -47,11 +47,11 @@ fn main() {
            if let Some((_, [session])) = encode_file_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             std::fs::read_to_string(de.path())
               .ok()
-              .map(|encode_file_contents| encode_file_contents.trim().to_owned())
+              .map(|encode_file_contents| encode_file_contents.trim().to_owned()) // remove newline added by read_to_string
               .and_then(|encode_file_contents| {
                 let encode_dir = Path::new(&encode_file_contents);
-                if encode_dir.is_dir() && encode_reg.is_match(&encode_file_contents) {
-                  if let Some((_, [season])) = encode_reg.captures(&encode_file_contents).map(|c| c.extract()) {
+                if encode_dir.is_dir() && encode_dir_reg.is_match(&encode_file_contents) {
+                  if let Some((_, [season])) = encode_dir_reg.captures(&encode_file_contents).map(|c| c.extract()) {
                     Some(EntryType::new_encodes(&encode_file_contents, season, session))
                   } else {
                     None
@@ -69,32 +69,74 @@ fn main() {
       })
       .collect();
 
-  let mut session_hash: BTreeMap<SessionId, Vec<RenameFile>> = BTreeMap::new();
+  // let mut session_hash: BTreeMap<SessionId, Vec<RenameFile>> = BTreeMap::new();
 
-  for session in sessions.iter() {
-    if let Ok(session_type) = <EntryType as TryInto<RenameFile>>::try_into(session.clone()) {
-      let session_id = session_type.clone().session;
-      session_hash
-        .entry(session_id)
-        .and_modify(|sv| sv.push(session_type.clone()))
-        .or_insert(vec!(session_type));
+  impl FromIterator<RenameFile> for HashMap<SessionId, Vec<RenameFile>> {
+
+    fn from_iter<T: IntoIterator<Item = RenameFile>>(renames: T) -> Self {
+      let mut hash: HashMap<SessionId, Vec<RenameFile>> = HashMap::new();
+        println!("------------- {}", "called");
+        for rename in renames {
+          hash
+            .entry(rename.session_id())
+            .and_modify(|v| v.push(rename.clone()))
+            .or_insert(vec![rename]);
+        }
+
+        hash
+    }
+}
+
+  let rename_files: Vec<RenameFile> =
+    entry_types
+      .iter()
+      .filter_map(|session_type| {
+        <EntryType as TryInto<RenameFile>>::try_into(session_type.clone())
+          .ok()
+        })
+      .collect();
+
+
+  let rename_files_hash: HashMap<SessionId, Vec<RenameFile>> =
+    HashMap::from_iter(rename_files);
+
+  let sessions_hash: HashMap<SessionId, Session> =
+    rename_files_hash
+      .into_iter()
+      .map(|(session_id, rename_files)| (session_id.clone(), Session::new(session_id, rename_files)))
+      .collect();
+
+  println!("sessions_hash \n{:?}", sessions_hash);
+
+  let encode_dir_hash: HashMap<SessionId, EncodeDir> =
+    entry_types
+      .into_iter()
+      .filter_map(|s| {
+        <EntryType as TryInto<EncodeDir>>::try_into(s)
+          .ok()
+          .map(|encode_dir| {
+            (encode_dir.session_id.clone(), encode_dir)
+          })
+      })
+      .collect();
+
+  let mut sessions_to_encode_dir: Vec<SessionToEncodeDir> = vec![];
+
+  // Map from SessionId -> SessionToEncodeDir
+  for (session_id, session) in sessions_hash {
+    if let Some(encode_dir) = encode_dir_hash.get(&session_id) {
+      sessions_to_encode_dir.push(SessionToEncodeDir::new(session_id, session, encode_dir.clone()))
     }
   }
 
-  let encode_values: Vec<_> =
-    sessions
-      .into_iter()
-      .filter_map(|s| <EntryType as TryInto<EncodeDir>>::try_into(s).ok() )
-      .collect();
+  // let mut encode_options: Vec<EncodeOption> =
+  //   encode_values
+  //     .into_iter()
+  //     .map(EncodeOption::Encode)
+  //     .collect();
 
-  let mut encode_options: Vec<EncodeOption> =
-    encode_values
-      .into_iter()
-      .map(EncodeOption::Encode)
-      .collect();
-
-  encode_options.push(EncodeOption::Skip);
-  encode_options.push(EncodeOption::Done);
+  // encode_options.push(EncodeOption::Skip);
+  // encode_options.push(EncodeOption::Done);
 
   let profile_options =
     vec![
@@ -105,27 +147,14 @@ fn main() {
   let mut selections: Vec<UserSelection> = vec![];
 
   println!();
-  for (session_id, session_files) in session_hash {
-    println!("{} has the following files:", style(session_id.id()).yellow().bold());
-    for file in &session_files {
+  for sed in sessions_to_encode_dir {
+    println!("{} has the following files:", style(sed.session_id().id()).yellow().bold());
+    for file in sed.session().files() {
       println!(" - {}", file.mkv_file);
     }
 
-    let selection_encode_option =
-      show_select(&encode_options, &format!("Copy {} files to: ", style(session_id.id()).yellow())).unwrap();
-
-    match selection_encode_option {
-      EncodeOption::Encode(encode_type) => {
-        let selected_profile =
-          show_select(&profile_options, "Profile:").unwrap();
-
-        selections.push(UserSelection::new(session_id, session_files ,encode_type, selected_profile))
-      },
-      EncodeOption::Skip => (),
-      EncodeOption::Done => break,
-    }
-
-    println!();
+    let selected_profile = show_select(&profile_options, "Profile:").unwrap();
+    selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()))
   }
 
   println!("Your choices were:");
@@ -146,7 +175,8 @@ fn main() {
     let continue_result = show_select(&continue_options, "Proceed with encoding selection?");
     match continue_result {
       Ok(ContinueType::EncodeSelection) => {
-        encode_selection(selections).unwrap()
+        println!("{}", "you wanted to continue")
+        // encode_selection(selections).unwrap()
       },
       Ok(ContinueType::Cancel) => println!("{}", "canceling"),
       Err(_) => println!("{}", "quitting.."),
