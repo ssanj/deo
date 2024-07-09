@@ -14,6 +14,7 @@ dirs = "5"
 regex = "1.10.5"
 dialoguer = { version="0.11", features=["fuzzy-select"] }
 console = "0.15.8"
+indicatif = "0.17.8"
 
 [dev-dependencies]
 pretty_assertions = "1"

@@ -35,15 +35,24 @@ impl fmt::Display for Profile {
   }
 }
 
-pub struct UserSelection<'a>(Vec<SessionType>, &'a EncodeType, &'a Profile);
+pub struct Session(Vec<SessionType>);
+
+
+impl Session {
+  pub fn first(&self) -> Option<SessionType> {
+    self.0.first().cloned()
+  }
+}
+
+pub struct UserSelection<'a>(Session, &'a EncodeType, &'a Profile);
 
 impl <'a> UserSelection<'a> {
   pub fn new(session_types: Vec<SessionType>, encode_type: &'a EncodeType, profile: &'a Profile) -> Self {
-    Self(session_types, encode_type, profile)
+    Self(Session(session_types), encode_type, profile)
   }
 
   pub fn session_types(&self) -> &[SessionType] {
-    &self.0
+    &self.0.0
   }
 
   pub fn encode_type(&self) -> &EncodeType {

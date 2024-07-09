@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
+use std::path::Path;
 use console::style;
+use indicatif::{ProgressBar, ProgressStyle};
 use walkdir::WalkDir;
 use regex::Regex;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
@@ -8,7 +10,8 @@ use std::process::{Command, Stdio};
 use args::cli;
 use entry_type::{EntryType, EncodeType, SessionType, SessionId};
 
-use crate::{hb_output_parser::parse, user_selection::{ContinueType, EncodeOption, Profile, UserSelection}};
+use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
+use crate::hb_output_parser::{parse, Output};
 
 mod args;
 mod entry_type;
@@ -19,6 +22,7 @@ fn main() {
   let args = cli::get_cli_args();
   println!("source: {}", &args.source.to_string_lossy());
   let rename_reg = Regex::new(r"(session\d{1,})\/renames\/(S\d{2,}E\d{2,})\s-\s(.+.mkv)$").unwrap();
+  let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode\.txt$").unwrap();
   let encode_reg = Regex::new(r".+\/(.+\s-\sSeason\s\d{2,})$").unwrap();
 
   let sessions: Vec<EntryType> =
@@ -32,9 +36,30 @@ fn main() {
           } else {
             None
           }
-        } else if de.file_type().is_dir() && encode_reg.is_match(de.path().to_str().unwrap()) {
+        } /*else if de.file_type().is_dir() && encode_reg.is_match(de.path().to_str().unwrap()) {
           if let Some((_, [season])) = encode_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             Some(EntryType::new_encodes(de.path(), season))
+          } else {
+            None
+          }
+        } */
+          else if de.file_type().is_file() && encode_file_reg.is_match(de.path().to_str().unwrap()) {
+           if let Some((_, [session])) = encode_file_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+            std::fs::read_to_string(de.path())
+              .ok()
+              .map(|encode_file_contents| encode_file_contents.trim().to_owned())
+              .and_then(|encode_file_contents| {
+                let encode_dir = Path::new(&encode_file_contents);
+                if encode_dir.is_dir() && encode_reg.is_match(&encode_file_contents) {
+                  if let Some((_, [season])) = encode_reg.captures(&encode_file_contents).map(|c| c.extract()) {
+                    Some(EntryType::new_encodes(&encode_file_contents, season, session))
+                  } else {
+                    None
+                  }
+                } else {
+                  None
+                }
+              })
           } else {
             None
           }
@@ -48,7 +73,7 @@ fn main() {
 
   for session in sessions.iter() {
     if let Ok(session_type) = <EntryType as TryInto<SessionType>>::try_into(session.clone()) {
-      let session_id = SessionId::new(&session_type.session);
+      let session_id = session_type.clone().session;
       session_hash
         .entry(session_id)
         .and_modify(|sv| sv.push(session_type.clone()))
@@ -149,12 +174,23 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
     .arg("-Z")
     .arg(profile_name);
 
+
+  let bar_style =
+    ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3}").unwrap();
+
+  let bar =
+    ProgressBar::new(100)
+    .with_style(bar_style)
+    .with_finish(indicatif::ProgressFinish::Abandon);
+
   for selection in selections {
     for input in selection.session_types() {
       let input_file = &input.path;
       let output_file = selection.encode_type().path.join(&input.output_file);
+      bar.set_prefix(input.file_name.clone());
 
-      println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
+      // Print this when --verbose is on
+      // println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
 
       let mut handbrake =
         cmd
@@ -173,16 +209,25 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
       let stdout_reader = BufReader::new(out);
       let lines = stdout_reader.lines();
 
-      println!("------------- {}", "before");
+      // println!("------------- {}", "before");
       for line in lines {
-        parse(line.unwrap());
+        match parse(line.unwrap()) {
+          Output::Progress(progress) => {
+            bar.set_position(progress as u64)
+          },
+          Output::Ignore => (),
+          Output::Done(_) => {
+            bar.finish_and_clear()
+          }
+        }
       }
-      println!("------------- {}", "after");
+      // println!("------------- {}", "after");
 
       let exit_status = handbrake.wait().expect("Could not get output");
-      let code = exit_status.code().expect("Could not get exit code");
-      println!("handbrake returned exit code: {}", code);
 
+      // Use this when there is an error
+      let _code = exit_status.code().expect("Could not get exit code");
+      // println!("handbrake returned exit code: {}", code);
     }
   }
 
