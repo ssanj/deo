@@ -8,7 +8,7 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use std::process::{Command, Stdio};
 
 use args::cli;
-use entry_type::{EntryType, EncodeType, SessionType, SessionId};
+use entry_type::{EntryType, EncodeDir, SessionType, SessionId};
 
 use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
 use crate::hb_output_parser::{parse, Output};
@@ -84,7 +84,7 @@ fn main() {
   let encode_values: Vec<_> =
     sessions
       .into_iter()
-      .filter_map(|s| <EntryType as TryInto<EncodeType>>::try_into(s).ok() )
+      .filter_map(|s| <EntryType as TryInto<EncodeDir>>::try_into(s).ok() )
       .collect();
 
   let mut encode_options: Vec<EncodeOption> =
@@ -108,7 +108,7 @@ fn main() {
   for (session_id, session_files) in session_hash {
     println!("{} has the following files:", style(session_id.id()).yellow().bold());
     for file in &session_files {
-      println!(" - {}", file.input_file);
+      println!(" - {}", file.mkv_file);
     }
 
     let selection_encode_option =
@@ -119,7 +119,7 @@ fn main() {
         let selected_profile =
           show_select(&profile_options, "Profile:").unwrap();
 
-        selections.push(UserSelection::new(session_files ,encode_type, selected_profile))
+        selections.push(UserSelection::new(session_id, session_files ,encode_type, selected_profile))
       },
       EncodeOption::Skip => (),
       EncodeOption::Done => break,
@@ -186,9 +186,9 @@ fn encode_selection(selections: Vec<UserSelection>) -> Result<(), String> {
   for selection in selections {
     for input in selection.session_types() {
       let input_file = &input.path;
-      let output_file = selection.encode_type().path.join(&input.output_file);
-      bar.set_prefix(input.file_name.clone());
+      let output_file = selection.encode_type().path.join(&input.mp4_file);
 
+      bar.set_prefix(input.mkv_file.clone());
       // Print this when --verbose is on
       // println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
 

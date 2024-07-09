@@ -1,8 +1,8 @@
 use std::fmt;
-use crate::entry_type::{EncodeType, SessionType};
+use crate::entry_type::{EncodeDir, SessionId, SessionType};
 
 pub enum EncodeOption {
-  Encode(EncodeType),
+  Encode(EncodeDir),
   Skip,
   Done
 }
@@ -10,7 +10,7 @@ pub enum EncodeOption {
 impl fmt::Display for EncodeOption {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let option = match self {
-      EncodeOption::Encode(EncodeType { season, .. }) => season,
+      EncodeOption::Encode(EncodeDir { season, .. }) => season,
       EncodeOption::Skip => "Skip",
       EncodeOption::Done => "Done",
     };
@@ -35,39 +35,61 @@ impl fmt::Display for Profile {
   }
 }
 
-pub struct Session(Vec<SessionType>);
-
+/// A Session has a SessionId and a list of files (SessionType)
+pub struct Session {
+  session_id: SessionId,
+  files: Vec<SessionType>,
+}
 
 impl Session {
+
+  pub fn new(session_id: SessionId, files: Vec<SessionType>) -> Self {
+    Self {
+      session_id,
+      files
+    }
+  }
+
   pub fn first(&self) -> Option<SessionType> {
-    self.0.first().cloned()
+    self.files.first().cloned()
   }
 }
 
-pub struct UserSelection<'a>(Session, &'a EncodeType, &'a Profile);
+pub struct UserSelection<'a> {
+  session: Session,
+  encode_dir: &'a EncodeDir,
+  profile: &'a Profile
+}
 
 impl <'a> UserSelection<'a> {
-  pub fn new(session_types: Vec<SessionType>, encode_type: &'a EncodeType, profile: &'a Profile) -> Self {
-    Self(Session(session_types), encode_type, profile)
+  pub fn new(session_id: SessionId, session_types: Vec<SessionType>, encode_dir: &'a EncodeDir, profile: &'a Profile) -> Self {
+    let session = Session::new(session_id, session_types);
+    Self {
+      session,
+      encode_dir,
+      profile
+    }
   }
 
   pub fn session_types(&self) -> &[SessionType] {
-    &self.0.0
+    &self.session.files
   }
 
-  pub fn encode_type(&self) -> &EncodeType {
-    self.1
+  pub fn encode_type(&self) -> &EncodeDir {
+    &self.encode_dir
   }
 
   pub fn profile(&self) -> &Profile {
-    self.2
+    &self.profile
   }
 }
 
 impl fmt::Display for UserSelection<'_> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let UserSelection(session_type, encode_type, profile) = self;
-      write!(f, "Copy {} -> {} with {} profile", session_type.first().unwrap().session, encode_type.season, profile)
+    let UserSelection { session, encode_dir, profile } = self;
+      let session_id = &session.session_id;
+      let season = &encode_dir.season;
+      write!(f, "Copy {} -> {} with {} profile", session_id, season, profile)
   }
 }
 
