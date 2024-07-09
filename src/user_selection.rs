@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::entry_type::{EncodeDir, SessionId, RenameFile};
+use crate::entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir};
 
 pub enum EncodeOption {
   Encode(EncodeDir),
@@ -36,56 +36,6 @@ impl fmt::Display for Profile {
   }
 }
 
-/// A Session has a SessionId and a list of files (RenameFile)
-#[derive(Debug, Clone)]
-pub struct Session {
-  session_id: SessionId,
-  files: Vec<RenameFile>,
-}
-
-impl Session {
-
-  pub fn new(session_id: SessionId, files: Vec<RenameFile>) -> Self {
-    Self {
-      session_id,
-      files
-    }
-  }
-
-  pub fn files(&self) -> &[RenameFile] {
-    &self.files
-  }
-}
-
-pub struct SessionToEncodeDir {
-  session_id: SessionId,
-  session: Session,
-  encode_dir: EncodeDir
-}
-
-impl SessionToEncodeDir {
-  pub fn new(session_id: SessionId, session: Session, encode_dir: EncodeDir) -> Self {
-    Self {
-      session_id,
-      session,
-      encode_dir
-    }
-  }
-}
-
-impl SessionToEncodeDir {
-  pub fn session_id(&self) -> &SessionId {
-    &self.session_id
-  }
-
-  pub fn session(&self) -> &Session {
-    &self.session
-  }
-
-  pub fn encode_dir(&self) -> &EncodeDir {
-    &self.encode_dir
-  }
-}
 
 pub struct UserSelection {
   session_id: SessionId,
@@ -103,11 +53,11 @@ impl <'a> UserSelection {
   }
 
   pub fn rename_files(&self) -> &[RenameFile] {
-    &self.session_to_encode_dir.session.files()
+    &self.session_to_encode_dir.session().files()
   }
 
   pub fn encode_dir(&self) -> &EncodeDir {
-    &self.session_to_encode_dir.encode_dir
+    &self.session_to_encode_dir.encode_dir()
   }
 
   pub fn profile(&self) -> &Profile {
@@ -118,7 +68,7 @@ impl <'a> UserSelection {
 impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let UserSelection { session_id, session_to_encode_dir, profile } = self;
-      let season = &session_to_encode_dir.encode_dir.season;
+      let season = &session_to_encode_dir.encode_dir().season;
       write!(f, "Copy {} -> {} with {} profile", session_id, season, profile)
   }
 }

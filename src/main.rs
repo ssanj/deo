@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::path::Path;
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -8,9 +8,9 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use std::process::{Command, Stdio};
 
 use args::cli;
-use entry_type::{EntryType, EncodeDir, RenameFile, SessionId};
+use entry_type::{EntryType, EncodeDir, RenameFile, SessionId, Session, SessionToEncodeDir};
 
-use crate::user_selection::{ContinueType, EncodeOption, Profile, Session, SessionToEncodeDir, UserSelection};
+use crate::user_selection::{ContinueType, EncodeOption, Profile, UserSelection};
 use crate::hb_output_parser::{parse, Output};
 
 mod args;
@@ -69,25 +69,8 @@ fn main() {
       })
       .collect();
 
-  // let mut session_hash: BTreeMap<SessionId, Vec<RenameFile>> = BTreeMap::new();
 
-  impl FromIterator<RenameFile> for HashMap<SessionId, Vec<RenameFile>> {
-
-    fn from_iter<T: IntoIterator<Item = RenameFile>>(renames: T) -> Self {
-      let mut hash: HashMap<SessionId, Vec<RenameFile>> = HashMap::new();
-        println!("------------- {}", "called");
-        for rename in renames {
-          hash
-            .entry(rename.session_id())
-            .and_modify(|v| v.push(rename.clone()))
-            .or_insert(vec![rename]);
-        }
-
-        hash
-    }
-}
-
-  let rename_files: Vec<RenameFile> =
+  let sessions_hash: HashMap<SessionId, Session> =
     entry_types
       .iter()
       .filter_map(|session_type| {
@@ -96,15 +79,6 @@ fn main() {
         })
       .collect();
 
-
-  let rename_files_hash: HashMap<SessionId, Vec<RenameFile>> =
-    HashMap::from_iter(rename_files);
-
-  let sessions_hash: HashMap<SessionId, Session> =
-    rename_files_hash
-      .into_iter()
-      .map(|(session_id, rename_files)| (session_id.clone(), Session::new(session_id, rename_files)))
-      .collect();
 
   println!("sessions_hash \n{:?}", sessions_hash);
 

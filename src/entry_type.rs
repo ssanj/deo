@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::fmt;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub enum EntryType {
@@ -73,6 +74,25 @@ impl RenameFile {
   pub fn session_id(&self) -> SessionId {
     self.session.clone()
   }
+}
+
+/// Convert from a collection of RenameFile into a Map<SessionId, Session>
+impl FromIterator<RenameFile> for HashMap<SessionId, Session> {
+
+  fn from_iter<T: IntoIterator<Item = RenameFile>>(renames: T) -> Self {
+    let mut hash: HashMap<SessionId, Vec<RenameFile>> = HashMap::new();
+      for rename in renames {
+        hash
+          .entry(rename.session_id())
+          .and_modify(|v| v.push(rename.clone()))
+          .or_insert(vec![rename]);
+      }
+
+      hash
+        .into_iter()
+        .map(|(k, v)| (k.clone(), Session::new(k, v)))
+        .collect()
+    }
 }
 
 impl TryFrom<EntryType> for RenameFile {
@@ -150,5 +170,56 @@ impl EntryType {
       season: season.to_owned(),
       session: SessionId::new(session)
     }
+  }
+}
+
+/// A Session has a SessionId and a list of files (RenameFile)
+#[derive(Debug, Clone)]
+pub struct Session {
+  session_id: SessionId,
+  files: Vec<RenameFile>,
+}
+
+impl Session {
+
+  pub fn new(session_id: SessionId, files: Vec<RenameFile>) -> Self {
+    Self {
+      session_id,
+      files
+    }
+  }
+
+  pub fn files(&self) -> &[RenameFile] {
+    &self.files
+  }
+}
+
+pub struct SessionToEncodeDir {
+  session_id: SessionId,
+  session: Session,
+  encode_dir: EncodeDir
+}
+
+impl SessionToEncodeDir {
+  pub fn new(session_id: SessionId, session: Session, encode_dir: EncodeDir) -> Self {
+    Self {
+      session_id,
+      session,
+      encode_dir
+    }
+  }
+}
+
+impl SessionToEncodeDir {
+  pub fn session_id(&self) -> &SessionId {
+    &self.session_id
+  }
+
+  pub fn session(&self) -> &Session {
+    &self.session
+  }
+
+  pub fn encode_dir(&self) -> &EncodeDir {
+    &self.encode_dir
   }
 }
