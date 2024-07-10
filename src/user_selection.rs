@@ -75,7 +75,7 @@ impl fmt::Display for UserSelection {
 
 pub enum ContinueType {
   EncodeSelection,
-  Cancel
+  Cancel,
 }
 
 impl fmt::Display for ContinueType {
