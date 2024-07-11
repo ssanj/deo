@@ -1,7 +1,8 @@
 use console::style;
 
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
-use crate::user_selection::{ContinueType, Profile, UserSelection};
+use crate::profiles::ProfileConfig;
+use crate::user_selection::{ContinueType, UserSelection};
 use crate::entry_type::SessionToEncodeDir;
 
 pub enum Interaction {
@@ -11,8 +12,8 @@ pub enum Interaction {
   InteractionError(String),
 }
 
-pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>) -> Interaction {
-    let selections = get_user_selection(sessions_to_encode_dir);
+pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles: ProfileConfig) -> Interaction {
+    let selections = get_user_selection(sessions_to_encode_dir, profiles);
     println!("Your choices were:");
 
     if selections.is_empty() {
@@ -41,12 +42,8 @@ pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>) -> In
 }
 
 
-fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>) -> Vec<UserSelection> {
-  let profile_options =
-    vec![
-      Profile::Dvd,
-      Profile::Bluray
-    ];
+fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles: ProfileConfig) -> Vec<UserSelection> {
+  let profile_options = profiles.items();
 
   let mut selections: Vec<UserSelection> = vec![];
 

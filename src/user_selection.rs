@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir};
+use crate::{entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir}, profiles::ProfileConfigItem};
 
 pub enum EncodeOption {
   Encode(EncodeDir),
@@ -19,32 +19,32 @@ impl fmt::Display for EncodeOption {
   }
 }
 
-#[derive(Debug, Clone)]
-pub enum Profile {
-  Dvd,
-  Bluray
-}
+// #[derive(Debug, Clone)]
+// pub enum Profile {
+//   Dvd,
+//   Bluray
+// }
 
-impl fmt::Display for Profile {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let option = match self {
-      Profile::Dvd => "DVD",
-      Profile::Bluray => "Bluray",
-    };
+// impl fmt::Display for Profile {
+//   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//     let option = match self {
+//       Profile::Dvd => "DVD",
+//       Profile::Bluray => "Bluray",
+//     };
 
-    write!(f, "{}", option)
-  }
-}
+//     write!(f, "{}", option)
+//   }
+// }
 
 
 pub struct UserSelection {
   session_id: SessionId,
   session_to_encode_dir: SessionToEncodeDir,
-  profile: Profile
+  profile: ProfileConfigItem
 }
 
 impl <'a> UserSelection {
-  pub fn new(session_id: SessionId, session_to_encode_dir: SessionToEncodeDir, profile: Profile) -> Self {
+  pub fn new(session_id: SessionId, session_to_encode_dir: SessionToEncodeDir, profile: ProfileConfigItem) -> Self {
     Self {
       session_id,
       session_to_encode_dir,
@@ -60,7 +60,7 @@ impl <'a> UserSelection {
     &self.session_to_encode_dir.encode_dir()
   }
 
-  pub fn profile(&self) -> &Profile {
+  pub fn profile(&self) -> &ProfileConfigItem {
     &self.profile
   }
 }
@@ -69,7 +69,7 @@ impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let UserSelection { session_id, session_to_encode_dir, profile } = self;
       let season = &session_to_encode_dir.encode_dir().season;
-      write!(f, "Copy {} -> {} with {} profile", session_id, season, profile)
+      write!(f, "Copy {} -> {} with {} (profile)", session_id, season, profile)
   }
 }
 

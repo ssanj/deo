@@ -1,8 +1,7 @@
-use std::path::Path;
-
 use serde_json::Value;
 use walkdir::WalkDir;
 use dirs::home_dir;
+use std::fmt;
 
 use crate::error::DeoError;
 
@@ -15,6 +14,32 @@ pub struct ProfileConfigItem {
 
 #[derive(Debug, Clone)]
 pub struct ProfileConfig(Vec<ProfileConfigItem>);
+
+impl ProfileConfig {
+  pub fn items(&self) -> &[ProfileConfigItem] {
+    &self.0
+  }
+}
+
+impl ProfileConfigItem {
+  pub fn full_path(&self) -> &str {
+    self.full.as_str()
+  }
+
+  pub fn display_name(&self) -> &str {
+    self.display_name.as_str()
+  }
+
+  pub fn preset_name(&self) -> &str {
+    self.preset_name.as_str()
+  }
+}
+
+impl fmt::Display for ProfileConfigItem {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      write!(f, "{}", self.display_name)
+  }
+}
 
 pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
 

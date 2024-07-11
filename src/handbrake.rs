@@ -13,18 +13,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   // -i S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mkv
   // -o S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mp4
 
-  // TODO: Source these from somewhere
-  let profile_file = "/Users/sanj/Desktop/DVD - H265 Apple Silicon HQ.json";
-  let profile_name = "DVD - H265 Apple Silicon HQ";
-
   let mut cmd = Command::new("handbrakecli");
-
-  cmd
-    .arg("--preset-import-file")
-    .arg(profile_file)
-    .arg("-Z")
-    .arg(profile_name);
-
 
   let bar_style =
     ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3}").unwrap();
@@ -38,13 +27,18 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     for input in selection.rename_files() {
       let input_file = &input.path;
       let output_file = selection.encode_dir().path.join(&input.mp4_file);
-
       bar.set_prefix(input.mkv_file.clone());
       // Print this when --verbose is on
       // println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
 
+      let profile = selection.profile();
+
       let mut handbrake =
         cmd
+          .arg("--preset-import-file")
+          .arg(profile.full_path())
+          .arg("-Z")
+          .arg(profile.preset_name())
           .arg("--json")
           .arg("-i")
           .arg(input_file)
