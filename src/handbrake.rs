@@ -1,4 +1,4 @@
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::process::{Command, Stdio};
 
 use crate::user_selection::UserSelection;
@@ -15,6 +15,8 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
 
   let mut cmd = Command::new("handbrakecli");
 
+  let multi = MultiProgress::new();
+
   let bar_style =
     ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3}").unwrap();
 
@@ -22,6 +24,27 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     ProgressBar::new(100)
     .with_style(bar_style)
     .with_finish(indicatif::ProgressFinish::Abandon);
+
+  let overall_bar_style =
+    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.blue}] {pos:>3}/{len:3}").unwrap();
+
+  let file_count =
+    selections
+      .iter()
+      .map(|sel| {
+        sel.rename_files().len() as u64
+      })
+      .sum();
+
+
+  let overall_bar =
+    ProgressBar::new(file_count)
+    .with_style(overall_bar_style)
+    .with_finish(indicatif::ProgressFinish::Abandon);
+
+  multi.add(bar.clone());
+  multi.add(overall_bar.clone());
+  overall_bar.set_prefix("completed: ");
 
   for selection in selections {
     for input in selection.rename_files() {
@@ -64,13 +87,14 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
             bar.finish_and_clear()
           }
         }
-      }
 
+      }
       let exit_status = handbrake.wait().expect("Could not get output");
 
       // Write exit code to a file with the file name so we can identify encoding errors
       let _code = exit_status.code().expect("Could not get exit code");
       // println!("handbrake returned exit code: {}", code);
+      overall_bar.inc(1);
     }
   }
 
