@@ -18,7 +18,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   let multi = MultiProgress::new();
 
   let bar_style =
-    ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3}").unwrap();
+    ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3} {eta}").unwrap();
 
   let bar =
     ProgressBar::new(100)
@@ -26,7 +26,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     .with_finish(indicatif::ProgressFinish::Abandon);
 
   let completed_bar_style =
-    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.blue}] {pos:>3}/{len:3}").unwrap();
+    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.blue}] {pos:>3}/{len:3} {eta}").unwrap();
 
   let file_count =
     selections
