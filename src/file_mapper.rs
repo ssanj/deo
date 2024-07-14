@@ -6,7 +6,7 @@ use crate::entry_type::{EntryType, EncodeDir, RenameFile, SessionId, Session, Se
 
 pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEncodeDir> {
   let rename_file_reg = Regex::new(r"(session\d{1,})\/renames\/(S\d{2,}E\d{2,})\s-\s(.+.mkv)$").unwrap();
-  let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode\.txt$").unwrap();
+  let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap();
   let encode_dir_reg = Regex::new(r".+\/(.+\s-\sSeason\s\d{2,})$").unwrap();
 
   let entry_types: Vec<EntryType> =
