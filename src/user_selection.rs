@@ -1,4 +1,6 @@
 use std::fmt;
+use console::style;
+
 use crate::{entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir}, profiles::ProfileConfigItem};
 
 pub struct UserSelection {
@@ -16,7 +18,7 @@ impl UserSelection {
     }
   }
 
-  pub fn rename_files(&self) -> &[RenameFile] {
+  pub fn rename_files(&self) -> Vec<RenameFile> {
     self.session_to_encode_dir.session().files()
   }
 
@@ -33,7 +35,7 @@ impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let UserSelection { session_id, session_to_encode_dir, profile } = self;
       let season = &session_to_encode_dir.encode_dir().season;
-      write!(f, "Copy {} -> {} with {} (profile)", session_id, season, profile)
+      write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(season).underlined(), style(profile).blue())
   }
 }
 
