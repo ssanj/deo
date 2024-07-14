@@ -149,7 +149,6 @@ impl TryFrom<EntryType> for EncodeDir {
           )
         },
         _ => {
-          println!("Could not TryInto: {:?}", value);
           Err(())
         },
     }

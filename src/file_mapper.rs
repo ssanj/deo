@@ -28,7 +28,6 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
               .map(|encode_file_contents| encode_file_contents.trim().to_owned()) // remove newline added by read_to_string
               .and_then(|encode_file_contents| {
                 let encode_dir = Path::new(&encode_file_contents);
-                println!("encode_dir: {}", &encode_file_contents);
                 if encode_dir.is_dir() && encode_dir_reg.is_match(&encode_file_contents) {
                   if let Some((_, [season])) = encode_dir_reg.captures(&encode_file_contents).map(|c| c.extract()) {
                     Some(EntryType::new_encodes(&encode_file_contents, season, session))
@@ -48,7 +47,8 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
       })
       .collect();
 
-  println!("entry_types: {:?}", &entry_types);
+  // TODO: Print this on --verbose
+  //println!("entry_types: {:?}", &entry_types);
 
   let sessions_hash: HashMap<SessionId, Session> =
     entry_types
@@ -60,7 +60,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
       .collect();
 
   // TODO: Print this on --verbose
-  println!("sessions_hash \n{:?}", sessions_hash);
+  //println!("sessions_hash \n{:?}", sessions_hash);
 
   let encode_dir_hash: HashMap<SessionId, EncodeDir> =
     entry_types
@@ -74,7 +74,8 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
       })
       .collect();
 
-  println!("encode_dir_hash {:?}", &encode_dir_hash);
+  // TODO: Print this on --verbose
+  //println!("encode_dir_hash {:?}", &encode_dir_hash);
 
   let mut sessions_to_encode_dir: Vec<SessionToEncodeDir> = vec![];
 
@@ -86,6 +87,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
     }
   }
 
-  println!("mappings {:?}", &sessions_to_encode_dir);
+  // TODO: Print this on --verbose
+  //println!("mappings {:?}", &sessions_to_encode_dir);
   sessions_to_encode_dir
 }
