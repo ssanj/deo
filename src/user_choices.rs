@@ -23,7 +23,6 @@ pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profi
     } else {
       for selection in &selections {
         println!("  {}", selection);
-        println!()
       }
 
       let continue_options =
@@ -59,7 +58,8 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
     }
 
     let selected_profile = show_select(profile_options, "Select encoding profile:").unwrap();
-    selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()))
+    selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()));
+    println!()
   }
 
   selections
