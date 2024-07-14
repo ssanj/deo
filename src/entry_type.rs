@@ -175,6 +175,7 @@ impl EntryType {
 
 /// A Session has a SessionId and a list of files (RenameFile)
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Session {
   session_id: SessionId,
   files: Vec<RenameFile>,

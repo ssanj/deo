@@ -6,7 +6,7 @@ use crate::hb_output_parser::{parse, Output};
 
 
 pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
-  println!("{}", "encoding...");
+  println!("encoding...");
   //handbreakcli
   // --preset-import-file ~/Desktop/DVD\ -\ H265\ Apple\ Silicon\ HQ.json
   // -Z "DVD - H265 Apple Silicon HQ"
@@ -25,7 +25,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     .with_style(bar_style)
     .with_finish(indicatif::ProgressFinish::Abandon);
 
-  let overall_bar_style =
+  let completed_bar_style =
     ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.blue}] {pos:>3}/{len:3}").unwrap();
 
   let file_count =
@@ -37,14 +37,25 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       .sum();
 
 
-  let overall_bar =
+  let completed_bar =
     ProgressBar::new(file_count)
-    .with_style(overall_bar_style)
+    .with_style(completed_bar_style)
     .with_finish(indicatif::ProgressFinish::Abandon);
 
+  let error_bar_style =
+    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.red}] {pos:>3}/{len:3}").unwrap();
+
+  let error_bar =
+    ProgressBar::new(file_count)
+      .with_style(error_bar_style)
+      .with_finish(indicatif::ProgressFinish::Abandon);
+
   multi.add(bar.clone());
-  multi.add(overall_bar.clone());
-  overall_bar.set_prefix("completed: ");
+  multi.add(completed_bar.clone());
+  multi.add(error_bar.clone());
+
+  completed_bar.set_prefix("completed: ");
+  error_bar.set_prefix("errors: ");
 
   for selection in selections {
     for input in selection.rename_files() {
@@ -92,10 +103,14 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       let exit_status = handbrake.wait().expect("Could not get output");
 
       // Write exit code to a file with the file name so we can identify encoding errors
-      let _code = exit_status.code().expect("Could not get exit code");
+      let code = exit_status.code().expect("Could not get exit code");
       // println!("handbrake returned exit code: {}", code);
-      overall_bar.inc(1);
+      if code != 0 {
+        error_bar.inc(1)
+      }
+      completed_bar.inc(1);
     }
+
   }
 
   Ok(())

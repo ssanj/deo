@@ -5,6 +5,7 @@ use crate::profiles::ProfileConfig;
 use crate::user_selection::{ContinueType, UserSelection};
 use crate::entry_type::SessionToEncodeDir;
 
+#[allow(clippy::enum_variant_names)]
 pub enum Interaction {
   ProceedToEncode(Vec<UserSelection>),
   NoFilesToEncode,
@@ -18,7 +19,7 @@ pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profi
 
     if selections.is_empty() {
       println!("You made no choices");
-      return Interaction::NoFilesToEncode
+      Interaction::NoFilesToEncode
     } else {
       for selection in &selections {
         println!("  {}", selection)
@@ -54,7 +55,7 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
       println!(" - {}", file.mkv_file);
     }
 
-    let selected_profile = show_select(&profile_options, "Select encoding profile:").unwrap();
+    let selected_profile = show_select(profile_options, "Select encoding profile:").unwrap();
     selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()))
   }
 
@@ -65,7 +66,7 @@ fn show_select<'a, T: ToString>(options: &'a [T], prompt: &str) -> Result<&'a T,
     FuzzySelect::with_theme(&ColorfulTheme::default())
       .with_prompt(prompt)
       .default(0)
-      .items(&options)
+      .items(options)
       .interact()
       .map_err(|e| e.to_string())
       .and_then(|index| {

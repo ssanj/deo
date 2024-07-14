@@ -26,10 +26,6 @@ impl ProfileConfigItem {
     self.full.as_str()
   }
 
-  pub fn display_name(&self) -> &str {
-    self.display_name.as_str()
-  }
-
   pub fn preset_name(&self) -> &str {
     self.preset_name.as_str()
   }
@@ -44,7 +40,7 @@ impl fmt::Display for ProfileConfigItem {
 pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
 
   home_dir()
-    .ok_or_else(|| DeoError::CouldNotFindHomeDir)
+    .ok_or(DeoError::CouldNotFindHomeDir)
     .and_then(|hd| {
       let profiles_path = hd.join(".deo").join("profiles");
       if !(profiles_path.exists() && profiles_path.is_dir()) {
@@ -100,7 +96,4 @@ pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
           })
         }
     })
-
-
-
 }
