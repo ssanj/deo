@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::entry_type::{EntryType, EncodeDir, RenameFile, SessionId, Session, SessionToEncodeDir};
+use crate::{debug::dump_entry_types, entry_type::{EncodeDir, EntryType, RenameFile, Session, SessionId, SessionToEncodeDir}};
 
-pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEncodeDir> {
-  // let rename_file_reg = Regex::new(r"(session\d{1,})\/renames\/(S\d{2,}E\d{2,})\s-\s(.+.mkv)$").unwrap();
+pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
   let rename_file_reg = Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap();
   let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap();
   let encode_dir_reg = Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap();
@@ -47,8 +46,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P) -> Vec<SessionToEnc
       })
       .collect();
 
-  // TODO: Print this on --verbose
-  //println!("entry_types: {:?}", &entry_types);
+  dump_entry_types(&entry_types, verbose);
 
   let sessions_hash: HashMap<SessionId, Session> =
     entry_types

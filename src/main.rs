@@ -9,12 +9,13 @@ mod user_choices;
 mod handbrake;
 mod profiles;
 mod error;
+mod debug;
 
 fn main() {
   let args = cli::get_cli_args();
   let profiles = profiles::read_profile_config().unwrap();
 
-  let sessions_to_encode_dir = file_mapper::get_session_encode_mapping(args.source);
+  let sessions_to_encode_dir = file_mapper::get_session_encode_mapping(args.source, args.verbose);
   if sessions_to_encode_dir.is_empty() {
     println!("Could not find any renames to encode")
   } else {

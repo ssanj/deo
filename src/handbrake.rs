@@ -7,12 +7,6 @@ use crate::hb_output_parser::{parse, Output};
 
 pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   println!("encoding...");
-  //handbreakcli
-  // --preset-import-file ~/Desktop/DVD\ -\ H265\ Apple\ Silicon\ HQ.json
-  // -Z "DVD - H265 Apple Silicon HQ"
-  // -i S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mkv
-  // -o S05E01\ -\ Mr.\ Monk\ and\ the\ Actor.mp4
-
   let mut cmd = Command::new("handbrakecli");
 
   let multi = MultiProgress::new();

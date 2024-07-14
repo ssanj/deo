@@ -22,7 +22,8 @@ pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profi
       Interaction::NoFilesToEncode
     } else {
       for selection in &selections {
-        println!("  {}", selection)
+        println!("  {}", selection);
+        println!()
       }
 
       let continue_options =
