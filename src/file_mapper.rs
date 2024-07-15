@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::debug::{dump_entry_types, dump_sessions_hash};
+use crate::debug::{dump_entry_types, dump_sessions_hash, dump_encodes_hash, dump_sessions_to_encode_dirs};
 use crate::entry_type::{EncodeDir, EntryType, RenameFile, Session, SessionId, SessionToEncodeDir};
 
 pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
@@ -73,8 +73,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
       })
       .collect();
 
-  // TODO: Print this on --verbose
-  //println!("encode_dir_hash {:?}", &encode_dir_hash);
+  dump_encodes_hash(&encode_dir_hash, verbose);
 
   let mut sessions_to_encode_dir: Vec<SessionToEncodeDir> = vec![];
 
@@ -86,7 +85,6 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
     }
   }
 
-  // TODO: Print this on --verbose
-  //println!("mappings {:?}", &sessions_to_encode_dir);
+  dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
   sessions_to_encode_dir
 }
