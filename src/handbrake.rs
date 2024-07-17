@@ -4,7 +4,6 @@ use std::process::{Command, Stdio};
 use crate::user_selection::UserSelection;
 use crate::hb_output_parser::{parse, Output};
 
-
 pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   println!("encoding...");
   let mut cmd = Command::new("handbrakecli");
@@ -12,7 +11,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   let multi = MultiProgress::new();
 
   let bar_style =
-    ProgressStyle::with_template("{prefix} [{wide_bar:.green}] {pos:>3}/{len:3} {eta}").unwrap();
+    ProgressStyle::with_template("pass:{msg} {prefix} [{wide_bar:.green}] {pos:>3}/{len:3} {eta}").unwrap();
 
   let bar =
     ProgressBar::new(100)
@@ -20,7 +19,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     .with_finish(indicatif::ProgressFinish::Abandon);
 
   let completed_bar_style =
-    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.blue}] {pos:>3}/{len:3} {eta}").unwrap();
+    ProgressStyle::with_template("completed:{pos:>3}/{len:3} [{wide_bar:.blue}] {eta}").unwrap();
 
   let file_count =
     selections
@@ -37,7 +36,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
     .with_finish(indicatif::ProgressFinish::Abandon);
 
   let error_bar_style =
-    ProgressStyle::with_template("{prefix} {pos}/{len} [{wide_bar:.red}] {pos:>3}/{len:3}").unwrap();
+    ProgressStyle::with_template("errors:{pos:>3}/{len:3} [{wide_bar:.9}]").unwrap();
 
   let error_bar =
     ProgressBar::new(file_count)
@@ -48,11 +47,12 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   multi.add(completed_bar.clone());
   multi.add(error_bar.clone());
 
-  completed_bar.set_prefix("completed: ");
-  error_bar.set_prefix("errors: ");
+  completed_bar.set_position(0);
+  error_bar.set_position(0);
 
   for selection in selections {
     for input in selection.rename_files() {
+      bar.set_message("0");
       let input_file = &input.path;
       let output_file = selection.encode_dir().path.join(&input.mp4_file);
       bar.set_prefix(input.mkv_file.clone());
@@ -86,6 +86,9 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
         match parse(line.unwrap()) {
           Output::Progress(progress) => {
             bar.set_position(progress as u64)
+          },
+          Output::Pass(pass) => {
+            bar.set_message(pass.to_string())
           },
           Output::Ignore => (),
           Output::Done(_) => {

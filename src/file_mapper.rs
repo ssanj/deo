@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::debug::{dump_entry_types, dump_sessions_hash, dump_encodes_hash, dump_sessions_to_encode_dirs};
+use crate::debug::*;
 use crate::entry_type::{EncodeDir, EntryType, RenameFile, Session, SessionId, SessionToEncodeDir};
 
 pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
@@ -32,17 +32,17 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
                   if let Some((_, [season])) = encode_dir_reg.captures(&encode_file_contents).map(|c| c.extract()) {
                     Some(EntryType::new_encodes(&encode_file_contents, season, session))
                   } else {
-                    None
+                    None // TODO: encode_dir_reg did not match captures
                   }
                 } else {
-                  None
+                  None  // TODO: is not a directory or encode_dir_reg did not match
                 }
               })
           } else {
-            None
+            None // TODO: encode_file_reg did not match catures
           }
         } else {
-          None
+          None // TODO: is not a file or encode_file_reg did not match
         }
       })
       .collect();
@@ -79,12 +79,16 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 
   // Map from SessionId -> SessionToEncodeDir
   // TODO: Can we map over this?
-  for (session_id, session) in sessions_hash {
-    if let Some(encode_dir) = encode_dir_hash.get(&session_id) {
-      sessions_to_encode_dir.push(SessionToEncodeDir::new(session_id, session, encode_dir.clone()))
+  for (session_id, session) in sessions_hash.iter() {
+    if let Some(encode_dir) = encode_dir_hash.get(session_id) {
+      sessions_to_encode_dir.push(SessionToEncodeDir::new(session_id.clone(), session.clone(), encode_dir.clone()))
     }
   }
 
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
+
+  dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
+
+  // TODO: Dump unmapped session ids
   sessions_to_encode_dir
 }

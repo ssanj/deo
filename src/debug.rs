@@ -15,6 +15,7 @@ const LIGHT: Color = Color::Color256(15);
 const LIGHT_BLUE: Color = Color::Color256(33);
 const GREEN: Color = Color::Color256(35);
 const GRAY: Color = Color::Color256(236);
+const ORANGE: Color = Color::Color256(172);
 
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
   if verbose {
@@ -96,8 +97,61 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
         println!("{}", session_msg);
         println!();
       }
-
-
     }
+  }
+}
+
+pub fn dump_unmapped_sessions_and_encode_dirs(
+    sessions_to_encode_dir: &[SessionToEncodeDir],
+    sessions_hash: &HashMap<SessionId, Session>,
+    encode_dir_hash: &HashMap<SessionId, EncodeDir>,
+    verbose: bool) {
+
+  if verbose {
+    let mapped_session_ids: Vec<SessionId> =
+      sessions_to_encode_dir
+        .iter()
+        .map(|sed| sed.session_id().clone())
+        .collect();
+
+      let mut has_unmapped_sessions = false;
+      for (session_id, session) in sessions_hash {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_sessions {
+            has_unmapped_sessions = true;
+            let msg = style("-- Unmapped sessions --").bg(ORANGE);
+            println!("{}", msg);
+          }
+
+          for file in session.files() {
+            let path = file.path.to_string_lossy();
+            let episode = file.episode;
+            let mkv_file = file.mkv_file;
+            let mp4_file = file.mp4_file;
+            let session_session_id = file.session.id();
+
+            let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n    episode:{episode}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            println!("{}", session_msg);
+            println!();
+          }
+        }
+      }
+
+      let mut has_unmapped_encodes = false;
+      for (session_id, encodes) in encode_dir_hash {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_encodes {
+            has_unmapped_encodes = true;
+            let msg = style("-- Unmapped encodes --").bg(ORANGE);
+            println!("{}", msg);
+          }
+
+          let encodes_session_id = encodes.session_id.id();
+          let encodes_path = encodes.path.to_string_lossy();
+          let encodes_season = &encodes.season;
+          let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {encodes_season}")).bg(GRAY);
+          println!("{}", encodes_msg);
+        }
+      }
   }
 }

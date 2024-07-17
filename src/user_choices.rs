@@ -51,8 +51,8 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
   println!();
   for sed in sessions_to_encode_dir {
     let files = sed.session().files();
-    let num = files.iter().count();
-    println!("{} ({}) has the following {} files:", style(&sed.encode_dir().season).underlined(),  style(sed.session_id().id()).yellow().bold(), num);
+    let num = files.len();
+    println!("{} ({}) has the following {} files:", style(&sed.encode_dir().season).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
       println!(" - {}", file.mkv_file);
     }
