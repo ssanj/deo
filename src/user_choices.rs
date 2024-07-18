@@ -1,7 +1,7 @@
 use console::style;
 
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
-use crate::profiles::ProfileConfig;
+use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
 use crate::entry_type::SessionToEncodeDir;
 
@@ -15,12 +15,12 @@ pub enum Interaction {
 
 pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles: ProfileConfig) -> Interaction {
     let selections = get_user_selection(sessions_to_encode_dir, profiles);
-    println!("Your choices were:");
 
     if selections.is_empty() {
       println!("You made no choices");
       Interaction::NoFilesToEncode
     } else {
+      println!("Your choices were:");
       for selection in &selections {
         println!("  {}", selection);
       }
@@ -44,7 +44,14 @@ pub fn interact_with_user(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profi
 
 
 fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles: ProfileConfig) -> Vec<UserSelection> {
-  let profile_options = profiles.items();
+  let mut profile_options: Vec<ProfileSelection> =
+    profiles
+      .items()
+      .iter()
+      .map(|p| ProfileSelection::Select(p.clone()))
+      .collect();
+
+  profile_options.push(ProfileSelection::Skip);
 
   let mut selections: Vec<UserSelection> = vec![];
 
@@ -57,8 +64,14 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
       println!(" - {}", file.mkv_file);
     }
 
-    let selected_profile = show_select(profile_options, "Select encoding profile:").unwrap();
-    selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()));
+    let selected_profile = show_select(&profile_options, "Select encoding profile:").unwrap();
+    match selected_profile {
+      ProfileSelection::Select(selected_profile) => {
+        selections.push(UserSelection::new(sed.session_id().clone(), sed, selected_profile.clone()));
+      },
+      ProfileSelection::Skip => (),
+    }
+
     println!()
   }
 

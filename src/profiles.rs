@@ -12,6 +12,23 @@ pub struct ProfileConfigItem {
   preset_name: String
 }
 
+#[derive(Debug)]
+pub enum ProfileSelection {
+  Select(ProfileConfigItem),
+  Skip
+}
+
+impl fmt::Display for ProfileSelection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      let item = match self {
+        ProfileSelection::Select(pci) => pci.to_string(),
+        ProfileSelection::Skip => "Skip".to_owned(),
+      };
+
+      write!(f, "{}", item)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ProfileConfig(Vec<ProfileConfigItem>);
 
