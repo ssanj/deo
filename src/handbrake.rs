@@ -1,4 +1,7 @@
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use std::fs::OpenOptions;
+use std::io::Write;
+use std::path::Path;
 use std::process::{Command, Stdio};
 
 use crate::user_selection::UserSelection;
@@ -49,6 +52,21 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
 
   completed_bar.set_position(0);
   error_bar.set_position(0);
+
+  let log_file_path = Path::new("dea.log");
+  if !selections.is_empty() && log_file_path.exists() {
+    std::fs::remove_file(log_file_path)
+      // TODO: Add stronger types around this error
+      .map_err(|e| format!("Could not remove log file: deo.log due to: {}", e.to_string()))?
+  }
+
+  // TODO: Make this strongly typed
+  let mut log_file =
+    OpenOptions::new()
+      .create_new(true)
+      .append(true)
+      .open(log_file_path)
+      .map_err(|e| format!("Could not open log_file: deo.log due to: {}", e.to_string()))?;
 
   for selection in selections {
     for input in selection.rename_files() {
@@ -103,9 +121,14 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       let code = exit_status.code().expect("Could not get exit code");
       // println!("handbrake returned exit code: {}", code);
       if code != 0 {
-        error_bar.inc(1)
+        error_bar.inc(1);
+        log_file.write_all(&format!("{} ❌\n", input_file.to_string_lossy()).into_bytes()).unwrap();
+      } else {
+        log_file.write_all(&format!("{} ✅\n", input_file.to_string_lossy()).into_bytes()).unwrap();
       }
+
       completed_bar.inc(1);
+      log_file.flush().unwrap();
     }
 
   }
