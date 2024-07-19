@@ -21,8 +21,10 @@ fn main() {
   } else {
     match user_choices::interact_with_user(sessions_to_encode_dir, profiles) {
       user_choices::Interaction::ProceedToEncode(selections) => {
-        handbrake::encode(selections)
-          .map_or_else(|error| println!("Encoding raised the following error: {}", error), |_| ());
+        match handbrake::encode(selections) {
+          Ok(_) => (),
+          Err(error) => println!("{}", error),
+        }
       },
       user_choices::Interaction::NoFilesToEncode => println!("No files to encode"),
       user_choices::Interaction::CancelEncode => println!("User canceled encoding"),

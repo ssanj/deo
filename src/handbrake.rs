@@ -4,10 +4,11 @@ use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
+use crate::error::{DeoEncodingError, HandbrakeCommand, LogFile};
 use crate::user_selection::UserSelection;
 use crate::hb_output_parser::{parse, Output};
 
-pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
+pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
   println!("encoding...");
   let mut cmd = Command::new("handbrakecli");
 
@@ -56,8 +57,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
   let log_file_path = Path::new("dea.log");
   if !selections.is_empty() && log_file_path.exists() {
     std::fs::remove_file(log_file_path)
-      // TODO: Add stronger types around this error
-      .map_err(|e| format!("Could not remove log file: deo.log due to: {}", e.to_string()))?
+      .map_err(|e| DeoEncodingError::CouldNotRemoveLogFile(LogFile::new(log_file_path), e.to_string()))?
   }
 
   // TODO: Make this strongly typed
@@ -66,7 +66,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       .create_new(true)
       .append(true)
       .open(log_file_path)
-      .map_err(|e| format!("Could not open log_file: deo.log due to: {}", e.to_string()))?;
+      .map_err(|e| DeoEncodingError::CouldNotOpenLogFile(LogFile::new(log_file_path), e.to_string()))?;
 
   for selection in selections {
     for input in selection.rename_files() {
@@ -74,8 +74,6 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       let input_file = &input.path;
       let output_file = selection.encode_dir().path.join(&input.mp4_file);
       bar.set_prefix(input.mkv_file.clone());
-      // Print this when --verbose is on
-      // println!("calling: handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}", profile_file, profile_name, input_file.to_string_lossy(), output_file.to_string_lossy());
 
       let profile = selection.profile();
 
@@ -89,11 +87,22 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
           .arg("-i")
           .arg(input_file)
           .arg("-o")
-          .arg(output_file)
+          .arg(&output_file)
           .stdout(Stdio::piped())
           .stderr(Stdio::null())
           .spawn()
-          .expect("Failed to spawn handbrakecli");
+          .map_err(|e| {
+            let cmd_string =
+              format!(
+                "handbrakecli --json --preset-import-file {} -Z {} -i {} -o {}",
+                profile.full_path(),
+                profile.preset_name(),
+                input_file.to_string_lossy(),
+                output_file.to_string_lossy()
+              );
+
+            DeoEncodingError::FailedToSpawnHandbrake(HandbrakeCommand::new(cmd_string), e.to_string())
+          })?;
 
       use std::io::{BufReader, BufRead};
       let out = handbrake.stdout.take().unwrap();
@@ -117,9 +126,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       }
       let exit_status = handbrake.wait().expect("Could not get output");
 
-      // Write exit code to a file with the file name so we can identify encoding errors
       let code = exit_status.code().expect("Could not get exit code");
-      // println!("handbrake returned exit code: {}", code);
       if code != 0 {
         error_bar.inc(1);
         log_file.write_all(&format!("{} ❌\n", input_file.to_string_lossy()).into_bytes()).unwrap();
@@ -130,7 +137,6 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), String> {
       completed_bar.inc(1);
       log_file.flush().unwrap();
     }
-
   }
 
   Ok(())
