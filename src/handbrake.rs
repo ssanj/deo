@@ -60,7 +60,6 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
       .map_err(|e| DeoEncodingError::CouldNotRemoveLogFile(LogFile::new(log_file_path), e.to_string()))?
   }
 
-  // TODO: Make this strongly typed
   let mut log_file =
     OpenOptions::new()
       .create_new(true)
