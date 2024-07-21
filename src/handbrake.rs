@@ -40,7 +40,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
     .with_finish(indicatif::ProgressFinish::Abandon);
 
   let error_bar_style =
-    ProgressStyle::with_template("errors:{pos:>3}/{len:3} [{wide_bar:.160}]").unwrap();
+    ProgressStyle::with_template("errors:{pos:>3}/{len:3} [{wide_bar:.124}]").unwrap();
 
   let error_bar =
     ProgressBar::new(file_count)

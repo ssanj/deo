@@ -1,39 +1,57 @@
 use std::collections::HashMap;
 
 use console::style;
-use console::Color;
 
 use crate::entry_type::EncodeDir;
 use crate::entry_type::EntryType;
 use crate::entry_type::Session;
 use crate::entry_type::SessionId;
 use crate::entry_type::SessionToEncodeDir;
+use crate::colours::*;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
-const BLUE: Color = Color::Color256(21);
-const LIGHT: Color = Color::Color256(15);
-const LIGHT_BLUE: Color = Color::Color256(33);
-const GREEN: Color = Color::Color256(35);
-const GRAY: Color = Color::Color256(236);
-const ORANGE: Color = Color::Color256(172);
 
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
   if verbose {
-    println!("{}", style("-- Entry Names --").bg(LIGHT).fg(Color::Black));
+    println!("{}", style("-- Entry Names --").bg(LIGHT).fg(BLACK));
     for et in entry_types {
       match et {
         EntryType::Rename { path, session, episode, file } => {
           let msg = style(format!("EntryType.Rename:\n  session:{}\n  path:{}\n  episode:{}\n  file:{}", session.id(), path.to_string_lossy(), episode, file)).bg(GRAY);
-          println!("{}", msg)
+          println!("{}", msg);
+          println!()
         },
         EntryType::Encode { session, path, season } => {
           let msg = style(format!("EntryType.Encode:\n  session:{}\n  path:{}\n  season:{}", session.id(), path.to_string_lossy(), season)).bg(GRAY);
-          println!("{}", msg)
+          println!("{}", msg);
+          println!()
         },
+        _ =>  ()
       }
-      println!()
     }
   }
+}
+
+pub fn dump_unmatched_entry_types(entry_types: &[EntryType], verbose: bool) {
+  if verbose {
+    println!("{}", style("-- Unmatched Entry Names --").bg(LIGHT_RED).fg(BLACK));
+    for et in entry_types {
+      match et {
+        EntryType::UnknownFileType { path } => {
+          let msg = format!("{}\n  path:{}", style("EntryType.Unknown:").bg(LIGHT_RED_2), path.to_string_lossy());
+          println!("{}", msg);
+          println!()
+        },
+        EntryType::InvalidEncodeDirPath { defined_path } => {
+          let msg = format!("{}\n  path:{}", style("EntryType.InvalidEncodeDirPath:").bg(RED_2), &defined_path);
+          println!("{}", msg);
+          println!()
+        },
+        _ => ()
+      }
+    }
+  }
+
 }
 
 pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: bool) {

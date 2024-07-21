@@ -10,7 +10,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap();
   let encode_dir_reg = Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap();
 
-  let entry_types: Vec<EntryType> =
+  let all_entry_types: Vec<EntryType> =
     WalkDir::new(source)
       .into_iter()
       .filter_map(|de| de.ok())
@@ -32,22 +32,38 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
                   if let Some((_, [season])) = encode_dir_reg.captures(&encode_file_contents).map(|c| c.extract()) {
                     Some(EntryType::new_encodes(&encode_file_contents, season, session))
                   } else {
-                    None // TODO: encode_dir_reg did not match captures
+                    None
                   }
                 } else {
-                  None  // TODO: is not a directory or encode_dir_reg did not match
+                  Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
                 }
               })
           } else {
-            None // TODO: encode_file_reg did not match catures
+            None
           }
         } else {
-          None // TODO: is not a file or encode_file_reg did not match
+          Some(EntryType::unknown_file_type(de.path())) // Not a file or encode_file_reg did not match
         }
       })
       .collect();
 
+  let entry_types: Vec<EntryType> =
+    all_entry_types
+    .iter()
+    .cloned()
+    .filter_map(|et| {
+      match et {
+        r @ EntryType::Rename { .. } => Some(r),
+        e @ EntryType::Encode { .. } => Some(e),
+        EntryType::UnknownFileType { .. } => None,
+        EntryType::InvalidEncodeDirPath { .. } => None,
+      }
+    })
+    .collect();
+
   dump_entry_types(&entry_types, verbose);
+
+  dump_unmatched_entry_types(&all_entry_types, verbose);
 
   let sessions_hash: HashMap<SessionId, Session> =
     entry_types

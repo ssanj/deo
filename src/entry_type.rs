@@ -28,8 +28,18 @@ pub enum EntryType {
     path: PathBuf,
 
     /// Season
+
     season: String,
   },
+
+  UnknownFileType {
+    path: PathBuf
+  },
+
+
+  InvalidEncodeDirPath {
+    defined_path: String
+  }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
@@ -171,6 +181,18 @@ impl EntryType {
       path: path.as_ref().to_owned(),
       season: season.to_owned(),
       session: SessionId::new(session)
+    }
+  }
+
+  pub(crate) fn could_not_match_defined_encode_dir(encode_file_contents: &str) -> EntryType {
+    EntryType::InvalidEncodeDirPath {
+      defined_path: encode_file_contents.to_owned()
+    }
+  }
+
+  pub(crate) fn unknown_file_type<P: AsRef<Path>>(path: P) -> EntryType {
+    EntryType::UnknownFileType {
+      path: path.as_ref().to_owned()
     }
   }
 }

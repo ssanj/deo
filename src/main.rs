@@ -10,6 +10,7 @@ mod handbrake;
 mod profiles;
 mod error;
 mod debug;
+mod colours;
 
 fn main() {
   let args = cli::get_cli_args();
