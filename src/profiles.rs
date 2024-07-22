@@ -3,7 +3,7 @@ use walkdir::WalkDir;
 use dirs::home_dir;
 use std::fmt;
 
-use crate::error::DeoError;
+use crate::error::{DeoProfileError, DirName, FileName};
 
 #[derive(Debug, Clone)]
 pub struct ProfileConfigItem {
@@ -54,27 +54,27 @@ impl fmt::Display for ProfileConfigItem {
   }
 }
 
-pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
+pub fn read_profile_config() -> Result<ProfileConfig, DeoProfileError> {
 
   home_dir()
-    .ok_or(DeoError::CouldNotFindHomeDir)
+    .ok_or(DeoProfileError::CouldNotFindHomeDir)
     .and_then(|hd| {
       let profiles_path = hd.join(".deo").join("profiles");
       if !(profiles_path.exists() && profiles_path.is_dir()) {
-        Err(DeoError::ProfilesDirDoesNotExist(profiles_path.to_string_lossy().to_string()))
+        Err(DeoProfileError::ProfilesDirDoesNotExist(DirName::new(profiles_path)))
       } else {
-        let profile_config_items: Result<Vec<ProfileConfigItem>, DeoError> =
+        let profile_config_items: Result<Vec<ProfileConfigItem>, DeoProfileError> =
           WalkDir::new(profiles_path.clone())
             .into_iter()
             .filter_map(|de| de.ok())
             .filter_map(|de| {
               if de.file_type().is_file() && de.path().extension().filter(|ext| &ext.to_string_lossy() == "json").is_some() {
-                let result: Result<ProfileConfigItem, DeoError> =
+                let result: Result<ProfileConfigItem, DeoProfileError> =
                   std::fs::read_to_string(de.path())
-                    .map_err(|e| DeoError::CouldNotReadProfile(de.path().to_string_lossy().to_string(), e.to_string() ))
+                    .map_err(|e| DeoProfileError::CouldNotReadProfile(FileName::new(de.path()), e.to_string() ))
                     .and_then(|profile_json| {
                         serde_json::from_str(&profile_json)
-                          .map_err(|e| DeoError::CouldNotDecodeProfile(de.path().to_string_lossy().to_string(), e.to_string()) )
+                          .map_err(|e| DeoProfileError::CouldNotDecodeProfile(FileName::new(de.path()), e.to_string()) )
                           .and_then(|json: Value| {
                             let preset_name_value = &json["PresetList"][0]["PresetName"];
 
@@ -90,7 +90,7 @@ pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
                                     }
                                   )
                                 },
-                                _ => Err(DeoError::ProfilePresetNameIsNotString(de.path().to_string_lossy().to_string())),
+                                value => Err(DeoProfileError::ProfilePresetNameIsNotString(FileName::new(de.path()), value.to_string())),
                             }
                           })
                   });
@@ -106,7 +106,7 @@ pub fn read_profile_config() -> Result<ProfileConfig, DeoError> {
         profile_config_items
           .and_then(|profile_items| {
             if profile_items.is_empty() {
-              Err(DeoError::NoProfilesFound(profiles_path.to_string_lossy().to_string()))
+              Err(DeoProfileError::NoProfilesFound(DirName::new(profiles_path)))
             } else {
               Ok(ProfileConfig(profile_items))
             }
