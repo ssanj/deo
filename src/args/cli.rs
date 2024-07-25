@@ -2,7 +2,9 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-/// automating handbrake to work with mkv-renamer
+/// Automating handbrake to work with mkv-renamer.
+///
+/// Note: Your handbrake profiles should be created under ~/.deo/profiles after exporting from the handbrake UI.
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about)]
 pub struct Args {
@@ -12,6 +14,8 @@ pub struct Args {
    pub source: PathBuf,
 
    /// Verbose debug logging
+   ///
+   /// You can get very detailed logging of what deo is considering when using verbose logging
    #[arg(long)]
    pub verbose: bool
 }
