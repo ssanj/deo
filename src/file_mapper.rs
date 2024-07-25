@@ -105,6 +105,5 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 
   dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
 
-  // TODO: Dump unmapped session ids
   sessions_to_encode_dir
 }
