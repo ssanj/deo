@@ -54,7 +54,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
   completed_bar.set_position(0);
   error_bar.set_position(0);
 
-  let log_file_path = Path::new("dea.log");
+  let log_file_path = Path::new("deo.log");
   if !selections.is_empty() && log_file_path.exists() {
     std::fs::remove_file(log_file_path)
       .map_err(|e| DeoEncodingError::CouldNotRemoveLogFile(LogFile::new(log_file_path), e.to_string()))?
