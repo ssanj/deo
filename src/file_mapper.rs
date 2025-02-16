@@ -3,33 +3,34 @@ use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
 use crate::debug::*;
+use std::sync::LazyLock;
 use crate::entry_type::{EncodeDir, EntryType, RenameFile, Session, SessionId, SessionToEncodeDir};
 
-pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
-  let rename_file_reg = Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap();
-  let encode_file_reg = Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap();
-  let encode_dir_reg = Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap();
+static RENAME_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap());
+static ENCODE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap());
+static ENCODE_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap());
 
+pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
   let all_entry_types: Vec<EntryType> =
     WalkDir::new(source)
       .into_iter()
       .filter_map(|de| de.ok())
       .filter_map(|de| {
-        if de.file_type().is_file() && rename_file_reg.is_match(de.path().to_str().unwrap()){
-          if let Some((_, [session, file, episode, _])) = rename_file_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+        if de.file_type().is_file() && RENAME_FILE_REG.is_match(de.path().to_str().unwrap()){
+          if let Some((_, [session, file, episode, _])) = RENAME_FILE_REG.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             Some(EntryType::new_rename(de.path(), session, episode, file))
           } else {
             None
           }
-        } else if de.file_type().is_file() && encode_file_reg.is_match(de.path().to_str().unwrap()) {
-          if let Some((_, [session])) = encode_file_reg.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+        } else if de.file_type().is_file() && ENCODE_FILE_REG.is_match(de.path().to_str().unwrap()) {
+          if let Some((_, [session])) = ENCODE_FILE_REG.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
             std::fs::read_to_string(de.path())
               .ok()
               .map(|encode_file_contents| encode_file_contents.trim().to_owned()) // remove newline added by read_to_string
               .and_then(|encode_file_contents| {
                 let encode_dir = Path::new(&encode_file_contents);
-                if encode_dir.is_dir() && encode_dir_reg.is_match(&encode_file_contents) {
-                  if let Some((_, [season])) = encode_dir_reg.captures(&encode_file_contents).map(|c| c.extract()) {
+                if encode_dir.is_dir() && ENCODE_DIR_REG.is_match(&encode_file_contents) {
+                  if let Some((_, [season])) = ENCODE_DIR_REG.captures(&encode_file_contents).map(|c| c.extract()) {
                     Some(EntryType::new_encodes(&encode_file_contents, season, session))
                   } else {
                     None
@@ -106,4 +107,44 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
 
   sessions_to_encode_dir
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn tv_series_regex_match() {
+      let path = "/Some/Path/Rips/session1/renames/S01E02 - The Unholy Alliance.mkv";
+      assert_eq!(RENAME_FILE_REG.is_match(path), true);
+
+      let (considered_str, [session, file, episode, _]) = RENAME_FILE_REG.captures(path).unwrap().extract();
+      assert_eq!(considered_str, "session1/renames/S01E02 - The Unholy Alliance.mkv");
+      assert_eq!(session, "session1");
+      assert_eq!(file, "S01E02 - The Unholy Alliance.mkv");
+      assert_eq!(episode, "S01E02");
+    }
+
+    #[test]
+    fn encode_file_name_regex_match() {
+      let encode_file_path = "/Some/Path/Rips/session2/renames/encode_dir.txt";
+      assert_eq!(ENCODE_FILE_REG.is_match(encode_file_path), true);
+
+      let (considered_str, [session]) = ENCODE_FILE_REG.captures(&encode_file_path).unwrap().extract();
+      assert_eq!(considered_str, "session2/renames/encode_dir.txt");
+      assert_eq!(session, "session2")
+    }
+
+    #[test]
+    fn encode_file_contents_regex_match() {
+      let encode_file_contents = "/Some/Path/Encodes/ThunderCats {tvdb-70355}/Season 01";
+      assert_eq!(ENCODE_DIR_REG.is_match(encode_file_contents), true);
+
+      let (considered_str, [encodes_dir]) = ENCODE_DIR_REG.captures(encode_file_contents).unwrap().extract();
+
+      assert_eq!(considered_str, "/Some/Path/Encodes/ThunderCats {tvdb-70355}/Season 01");
+      assert_eq!(encodes_dir, "ThunderCats {tvdb-70355}/Season 01");
+    }
 }

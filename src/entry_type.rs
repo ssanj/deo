@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 use std::fmt;
 use std::collections::HashMap;
 
+// TODO: Extend EntryType to have one rename for tv series and one for movies
+// This class models something that can be encoded later.
 #[derive(Debug, Clone)]
 pub enum EntryType {
   Rename {
@@ -27,8 +29,8 @@ pub enum EntryType {
     /// Full path to encode directory
     path: PathBuf,
 
+    // TODO: What does this mean in terms of a movie? Is it the name? Choose a better name for this field
     /// Season
-
     season: String,
   },
 
@@ -70,6 +72,7 @@ pub struct RenameFile {
   /// Session id associated with file
   pub session: SessionId,
 
+  // TODO: Why do we need this except for debugging?
   /// Episode name
   pub episode: String,
 
@@ -139,6 +142,7 @@ impl TryFrom<EntryType> for RenameFile {
 #[derive(Debug, Clone)]
 pub struct EncodeDir {
   pub path: PathBuf,
+  // TODO: Why would we need a season for a movie encode?
   pub season: String,
   pub session_id: SessionId,
 }
