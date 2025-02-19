@@ -52,7 +52,10 @@ pub enum EntryType {
     session: SessionId,
 
     /// Full path to encode directory
-    path: PathBuf
+    path: PathBuf,
+
+    /// Name of the movie
+    movie_name: MovieName
   },
 
   UnknownFileType {
@@ -83,6 +86,26 @@ impl fmt::Display for SessionId {
       write!(f, "{}", self.0)
   }
 }
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
+pub struct MovieName(String);
+
+impl MovieName {
+  pub fn new(value: &str) -> Self {
+    Self(value.to_string())
+  }
+
+  pub fn id(&self) -> &str {
+    &self.0
+  }
+}
+
+impl fmt::Display for MovieName {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      write!(f, "{}", self.0)
+  }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct RenameFile {
@@ -209,10 +232,18 @@ impl EntryType {
     }
   }
 
-  pub fn new_encodes<P: AsRef<Path>>(path: P, season: &str, session: &str) -> Self {
+  pub fn new_tv_series_encodes<P: AsRef<Path>>(path: P, season: &str, session: &str) -> Self {
     EntryType::TVSeriesEncode {
       path: path.as_ref().to_owned(),
       season: season.to_owned(),
+      session: SessionId::new(session)
+    }
+  }
+
+  pub fn new_movie_encodes<P: AsRef<Path>>(path: P, movie_name: &str, session: &str) -> Self {
+    EntryType::MovieEncode {
+      path: path.as_ref().to_owned(),
+      movie_name: MovieName::new(movie_name),
       session: SessionId::new(session)
     }
   }

@@ -119,6 +119,8 @@ fn handle_encode_file(path: &Path) -> Option<EntryType> {
           let encode_dir = Path::new(&encode_file_contents);
           if encode_dir.is_dir() && ENCODE_TV_SERIES_DIR_REG.is_match(&encode_file_contents) {
             handle_tv_series_encode_file(&encode_file_contents, session)
+          } else if encode_dir.is_dir() && ENCODE_MOVIE_DIR_REG.is_match(&encode_file_contents) {
+            handle_movie_encode_file(&encode_file_contents, session)
           } else {
             Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
           }
@@ -128,12 +130,20 @@ fn handle_encode_file(path: &Path) -> Option<EntryType> {
     }
 }
 
-fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryType> {
-    if let Some((_, [season])) = ENCODE_TV_SERIES_DIR_REG.captures(contents).map(|c| c.extract()) {
-      Some(EntryType::new_encodes(contents, season, session))
+fn handle_movie_encode_file(contents: &str, session: &str) -> Option<EntryType> {
+    if let Some((_, [movie_name])) = ENCODE_MOVIE_DIR_REG.captures(contents).map(|c| c.extract()) {
+      Some(EntryType::new_movie_encodes(contents, movie_name, session))
     } else {
       None
     }
+}
+
+fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryType> {
+  if let Some((_, [season])) = ENCODE_TV_SERIES_DIR_REG.captures(contents).map(|c| c.extract()) {
+    Some(EntryType::new_tv_series_encodes(contents, season, session))
+  } else {
+    None
+  }
 }
 
 #[cfg(test)]
