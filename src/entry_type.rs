@@ -46,6 +46,15 @@ pub enum EntryType {
     season: String,
   },
 
+  MovieEncode {
+
+    /// Session id of files that map to this encode directory
+    session: SessionId,
+
+    /// Full path to encode directory
+    path: PathBuf
+  },
+
   UnknownFileType {
     path: PathBuf
   },
