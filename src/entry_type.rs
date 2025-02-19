@@ -6,7 +6,7 @@ use std::collections::HashMap;
 // This class models something that can be encoded later.
 #[derive(Debug, Clone)]
 pub enum EntryType {
-  Rename {
+  TVSeriesRename {
 
     /// Full path to mkv file
     path: PathBuf,
@@ -21,7 +21,7 @@ pub enum EntryType {
     file: String
   },
 
-  Encode {
+  TVSeriesEncode {
 
     /// Session id of files that map to this encode directory
     session: SessionId,
@@ -113,7 +113,7 @@ impl TryFrom<EntryType> for RenameFile {
 
   fn try_from(value: EntryType) -> Result<Self, Self::Error> {
     match value {
-      EntryType::Rename { path, session, episode, file } => {
+      EntryType::TVSeriesRename { path, session, episode, file } => {
         let output_path = Path::new(&file);
 
         let mp4_file =
@@ -152,7 +152,7 @@ impl TryFrom<EntryType> for EncodeDir {
 
     fn try_from(value: EntryType) -> Result<Self, Self::Error> {
       match value {
-        EntryType::Encode { path, season, session } => {
+        EntryType::TVSeriesEncode { path, season, session } => {
           let session_id = session;
           Ok(
             EncodeDir {
@@ -172,7 +172,7 @@ impl TryFrom<EntryType> for EncodeDir {
 
 impl EntryType {
   pub fn new_rename<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
-    EntryType::Rename {
+    EntryType::TVSeriesRename {
       path: path.as_ref().to_owned(),
       session: SessionId::new(session),
       episode: episode.to_owned(),
@@ -181,7 +181,7 @@ impl EntryType {
   }
 
   pub fn new_encodes<P: AsRef<Path>>(path: P, season: &str, session: &str) -> Self {
-    EntryType::Encode {
+    EntryType::TVSeriesEncode {
       path: path.as_ref().to_owned(),
       season: season.to_owned(),
       session: SessionId::new(session)

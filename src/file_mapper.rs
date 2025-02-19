@@ -56,8 +56,8 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
     .cloned()
     .filter_map(|et| {
       match et {
-        r @ EntryType::Rename { .. } => Some(r),
-        e @ EntryType::Encode { .. } => Some(e),
+        r @ EntryType::TVSeriesRename { .. } => Some(r),
+        e @ EntryType::TVSeriesEncode { .. } => Some(e),
         EntryType::UnknownFileType { .. } => None,
         EntryType::InvalidEncodeDirPath { .. } => None,
       }
