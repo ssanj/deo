@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::debug::*;
+use crate::{debug::*, entry_type::RenameTypes};
 use std::sync::LazyLock;
-use crate::entry_type::{EncodeDir, EntryType, RenameFile, Session, SessionId, SessionToEncodeDir};
+use crate::entry_type::{EncodeDir, EntryType, TVSeriesRenameFile, Session, SessionId, SessionToEncodeDir};
 
 static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap());
 static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/(.+.mkv)$").unwrap());
@@ -38,8 +38,8 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
       match et {
         r @ EntryType::TVSeriesRename { .. } => Some(r),
         e @ EntryType::TVSeriesEncode { .. } => Some(e),
-        e @ EntryType::MovieEncode { .. } => Some(e),
         e @ EntryType::MovieRename { .. } => Some(e),
+        e @ EntryType::MovieEncode { .. } => Some(e),
         EntryType::UnknownFileType { .. } => None,
         EntryType::InvalidEncodeDirPath { .. } => None,
       }
@@ -54,7 +54,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
     entry_types
       .iter()
       .filter_map(|session_type| {
-        <EntryType as TryInto<RenameFile>>::try_into(session_type.clone())
+        <EntryType as TryInto<RenameTypes>>::try_into(session_type.clone())
           .ok()
         })
       .collect();

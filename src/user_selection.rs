@@ -1,7 +1,7 @@
 use std::fmt;
 use console::style;
 
-use crate::{entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir}, profiles::ProfileConfigItem};
+use crate::{entry_type::{EncodeDir, RenameTypes, SessionId, SessionToEncodeDir, TVSeriesRenameFile}, profiles::ProfileConfigItem};
 
 pub struct UserSelection {
   session_id: SessionId,
@@ -18,7 +18,7 @@ impl UserSelection {
     }
   }
 
-  pub fn rename_files(&self) -> Vec<RenameFile> {
+  pub fn rename_files(&self) -> Vec<RenameTypes> {
     self.session_to_encode_dir.session().files()
   }
 

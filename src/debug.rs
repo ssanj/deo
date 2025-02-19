@@ -4,13 +4,15 @@ use console::style;
 
 use crate::entry_type::EncodeDir;
 use crate::entry_type::EntryType;
+use crate::entry_type::MKVTypeAware;
 use crate::entry_type::Session;
 use crate::entry_type::SessionId;
 use crate::entry_type::SessionToEncodeDir;
 use crate::colours::*;
+use crate::entry_type::SessionTypeAware;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
-
+// TODO: Fix up episodic printing
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
   if verbose {
     println!("{}", style("-- Entry Names --").bg(LIGHT).fg(BLACK));
@@ -61,12 +63,20 @@ pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: b
       let msg = style(format!("SessionId:{}", si.id())).bg(GRAY);
       println!("{}", msg);
       for file in sess.files() {
-        let path = file.path.to_string_lossy();
-        let episode = file.episode;
-        let mkv_file = file.mkv_file;
-        let mp4_file = file.mp4_file;
-        let session_id = file.session.id();
-        let msg = style(format!("\n  session:{session_id}\n  path:{path}\n  episode:{episode}\n  mkv_file:{mkv_file}\n  mp4_file:{mp4_file}")).bg(GRAY);
+        let episode = match &file {
+            crate::entry_type::RenameTypes::TVSeries(tvseries_rename_file) => Some(&tvseries_rename_file.episode),
+            crate::entry_type::RenameTypes::Movie(_) => None,
+        };
+        let pathbuf = file.mkv_path();
+        let path = pathbuf.to_string_lossy();
+        let episode_str = match episode {
+            Some(e) => format!("  episode:{e}\n"),
+            None => "".to_string(),
+        };
+        let mkv_file = file.mkv_file();
+        let mp4_file = file.mp4_file();
+        let session_id = file.session_id();
+        let msg = style(format!("\n  session:{session_id}\n  path:{path}\n{episode_str}  mkv_file:{mkv_file}\n  mp4_file:{mp4_file}")).bg(GRAY);
         println!("{}", msg);
         println!();
       }
@@ -105,13 +115,22 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
       println!("{}", encodes_msg);
 
       for file in sted.session().files() {
-        let path = file.path.to_string_lossy();
-        let episode = file.episode;
-        let mkv_file = file.mkv_file;
-        let mp4_file = file.mp4_file;
-        let session_session_id = file.session.id();
+        let pathbuf = file.mkv_path();
+        let path = pathbuf.to_string_lossy();
+        let episode = match &file {
+            crate::entry_type::RenameTypes::TVSeries(tvseries_rename_file) => Some(&tvseries_rename_file.episode),
+            crate::entry_type::RenameTypes::Movie(_) => None,
+        };
+        let episode_str = match episode {
+            Some(e) => format!("    episode:{e}\n"),
+            None => "".to_string(),
+        };
 
-        let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n    episode:{episode}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+        let mkv_file = file.mkv_file();
+        let mp4_file = file.mp4_file();
+        let session_session_id = file.session_id();
+
+        let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n{episode_str}    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
         println!("{}", session_msg);
         println!();
       }
@@ -142,13 +161,21 @@ pub fn dump_unmapped_sessions_and_encode_dirs(
           }
 
           for file in session.files() {
-            let path = file.path.to_string_lossy();
-            let episode = file.episode;
-            let mkv_file = file.mkv_file;
-            let mp4_file = file.mp4_file;
-            let session_session_id = file.session.id();
+            let pathbuf = file.mkv_path();
+            let path = pathbuf.to_string_lossy();
+            let episode = match &file {
+                crate::entry_type::RenameTypes::TVSeries(tvseries_rename_file) => Some(&tvseries_rename_file.episode),
+                crate::entry_type::RenameTypes::Movie(_) => None,
+            };
+            let episode_str = match episode {
+                Some(e) => format!("    episode:{e}\n"),
+                None => "".to_string(),
+            };
+            let mkv_file = file.mkv_file();
+            let mp4_file = file.mp4_file();
+            let session_session_id = file.session_id();
 
-            let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n    episode:{episode}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n{episode_str}    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
             println!("{}", session_msg);
             println!();
           }

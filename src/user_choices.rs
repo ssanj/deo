@@ -3,7 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::entry_type::SessionToEncodeDir;
+use crate::entry_type::{MKVTypeAware, SessionToEncodeDir};
 
 #[allow(clippy::enum_variant_names)]
 pub enum Interaction {
@@ -61,7 +61,7 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
     let num = files.len();
     println!("{} ({}) has the following {} files:", style(&sed.encode_dir().season).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
-      println!(" - {}", file.mkv_file);
+      println!(" - {}", file.mkv_file());
     }
 
     let selected_profile = show_select(&profile_options, "Select encoding profile:").unwrap();
