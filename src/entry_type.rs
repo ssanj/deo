@@ -21,6 +21,18 @@ pub enum EntryType {
     file: String
   },
 
+  MovieRename {
+
+    /// Full path to mkv file
+    path: PathBuf,
+
+    /// Session id of file
+    session: SessionId,
+
+    /// file name and extension
+    file: String
+  },
+
   TVSeriesEncode {
 
     /// Session id of files that map to this encode directory
@@ -171,11 +183,19 @@ impl TryFrom<EntryType> for EncodeDir {
 
 
 impl EntryType {
-  pub fn new_rename<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
+  pub fn new_tv_series_rename<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
     EntryType::TVSeriesRename {
       path: path.as_ref().to_owned(),
       session: SessionId::new(session),
       episode: episode.to_owned(),
+      file: file.to_owned()
+    }
+  }
+
+  pub fn new_movie_rename<P: AsRef<Path>>(path: P, session: &str, file: &str) -> Self {
+    EntryType::MovieRename {
+      path: path.as_ref().to_owned(),
+      session: SessionId::new(session),
       file: file.to_owned()
     }
   }

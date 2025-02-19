@@ -20,7 +20,13 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
       .filter_map(|de| {
         if de.file_type().is_file() && RENAME_TV_SERIES_FILE_REG.is_match(de.path().to_str().unwrap()){
           if let Some((_, [session, file, episode, _])) = RENAME_TV_SERIES_FILE_REG.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
-            Some(EntryType::new_rename(de.path(), session, episode, file))
+            Some(EntryType::new_tv_series_rename(de.path(), session, episode, file))
+          } else {
+            None
+          }
+        }  else if de.file_type().is_file() && RENAME_MOVIE_FILE_REG.is_match(de.path().to_str().unwrap()){
+          if let Some((_, [session, file])) = RENAME_MOVIE_FILE_REG.captures(de.path().to_str().unwrap()).map(|c| c.extract()) {
+            Some(EntryType::new_movie_rename::<_>(de.path(), session, file))
           } else {
             None
           }
@@ -58,6 +64,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
       match et {
         r @ EntryType::TVSeriesRename { .. } => Some(r),
         e @ EntryType::TVSeriesEncode { .. } => Some(e),
+        e @ EntryType::MovieRename { .. } => Some(e),
         EntryType::UnknownFileType { .. } => None,
         EntryType::InvalidEncodeDirPath { .. } => None,
       }
