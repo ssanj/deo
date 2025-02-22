@@ -4,7 +4,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use crate::entry_type::MKVTypeAware;
+use crate::entry_type::{EncodeDirPathAware, MKVTypeAware};
 use crate::error::{DeoEncodingError, HandbrakeCommand, LogFile};
 use crate::user_selection::UserSelection;
 use crate::hb_output_parser::{parse, Output};
@@ -72,7 +72,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
     for input in selection.rename_files() {
       bar.set_message("0");
       let input_file = &input.mkv_path();
-      let output_file = selection.encode_dir().path.join(&input.mp4_file());
+      let output_file = selection.encode_dir().path().join(&input.mp4_file());
       bar.set_prefix(input.mkv_file());
 
       let profile = selection.profile();

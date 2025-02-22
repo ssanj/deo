@@ -2,8 +2,10 @@ use std::collections::HashMap;
 
 use console::style;
 
-use crate::entry_type::EncodeDir;
+use crate::entry_type::EncodeDirPathAware;
+use crate::entry_type::EncodeDirType;
 use crate::entry_type::EntryType;
+use crate::entry_type::LocationAware;
 use crate::entry_type::MKVTypeAware;
 use crate::entry_type::Session;
 use crate::entry_type::SessionId;
@@ -12,7 +14,7 @@ use crate::colours::*;
 use crate::entry_type::SessionTypeAware;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
-// TODO: Fix up episodic printing
+// TODO: Add entries for Movies
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
   if verbose {
     println!("{}", style("-- Entry Names --").bg(LIGHT).fg(BLACK));
@@ -70,7 +72,7 @@ pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: b
         let pathbuf = file.mkv_path();
         let path = pathbuf.to_string_lossy();
         let episode_str = match episode {
-            Some(e) => format!("  episode:{e}\n"),
+            Some(e) => format!("  location:{e}\n"),
             None => "".to_string(),
         };
         let mkv_file = file.mkv_file();
@@ -84,14 +86,17 @@ pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: b
   }
 }
 
-pub fn dump_encodes_hash(encode_dir_hash: &HashMap<SessionId, EncodeDir>, verbose: bool) {
+pub fn dump_encodes_hash(encode_dir_hash: &HashMap<SessionId, EncodeDirType>, verbose: bool) {
   if verbose {
     println!("{}", style("-- Encodes Hash --").bg(LIGHT_BLUE));
     for (si, ed) in encode_dir_hash {
-      let session_id = ed.session_id.id();
-      let path = ed.path.to_string_lossy();
-      let season = &ed.season;
-      let msg = style(format!("SessionId:{}\n  session:{session_id}\n  {path}\n  {season}", si.id())).bg(GRAY);
+      let session = ed.session_id();
+      let session_id = session.id();
+
+      let encode_path = ed.path();
+      let path = encode_path.to_string_lossy();
+      let location = ed.location();
+      let msg = style(format!("SessionId:{}\n  session:{session_id}\n  {path}\n  {location}", si.id())).bg(GRAY);
       println!("{}", msg);
       println!();
     }
@@ -104,14 +109,16 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
     for sted in session_to_encode_dirs {
       let session_id = sted.session_id().id();
       let encodes_dir = sted.encode_dir();
-      let encodes_path = encodes_dir.path.to_string_lossy();
-      let encodes_session_id = encodes_dir.session_id.id();
-      let encodes_season = &encodes_dir.season;
+      let encode_path = encodes_dir.path();
+      let encodes_path = encode_path.to_string_lossy();
+      let session = encodes_dir.session_id();
+      let encodes_session_id = session.id();
 
+      let location = encodes_dir.location();
       let msg = style(format!("SessionId:{session_id}")).bg(GRAY);
       println!("{}", msg);
 
-      let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {encodes_season}")).bg(GRAY);
+      let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {location}")).bg(GRAY);
       println!("{}", encodes_msg);
 
       for file in sted.session().files() {
@@ -141,7 +148,7 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
 pub fn dump_unmapped_sessions_and_encode_dirs(
     sessions_to_encode_dir: &[SessionToEncodeDir],
     sessions_hash: &HashMap<SessionId, Session>,
-    encode_dir_hash: &HashMap<SessionId, EncodeDir>,
+    encode_dir_hash: &HashMap<SessionId, EncodeDirType>,
     verbose: bool) {
 
   if verbose {
@@ -191,10 +198,11 @@ pub fn dump_unmapped_sessions_and_encode_dirs(
             println!("{}", msg);
           }
 
-          let encodes_session_id = encodes.session_id.id();
-          let encodes_path = encodes.path.to_string_lossy();
-          let encodes_season = &encodes.season;
-          let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {encodes_season}")).bg(GRAY);
+          let encodes_session_id = encodes.session_id();
+          let path = encodes.path();
+          let encodes_path = &path.to_string_lossy();
+          let location = encodes.location();
+          let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {location}")).bg(GRAY);
           println!("{}", encodes_msg);
         }
       }

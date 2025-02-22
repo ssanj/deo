@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::{debug::*, entry_type::RenameTypes};
+use crate::{debug::*, entry_type::{RenameTypes, SessionTypeAware}};
 use std::sync::LazyLock;
-use crate::entry_type::{EncodeDir, EntryType, TVSeriesRenameFile, Session, SessionId, SessionToEncodeDir};
+use crate::entry_type::{EncodeDirType, EntryType, Session, SessionId, SessionToEncodeDir};
 
 static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap());
 static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/(.+.mkv)$").unwrap());
@@ -62,14 +62,14 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 
   dump_sessions_hash(&sessions_hash, verbose);
 
-  let encode_dir_hash: HashMap<SessionId, EncodeDir> =
+  let encode_dir_hash: HashMap<SessionId, EncodeDirType> =
     entry_types
       .into_iter()
       .filter_map(|s| {
-        <EntryType as TryInto<EncodeDir>>::try_into(s)
+        <EntryType as TryInto<EncodeDirType>>::try_into(s)
           .ok()
           .map(|encode_dir| {
-            (encode_dir.session_id.clone(), encode_dir)
+            (encode_dir.session_id().clone(), encode_dir)
           })
       })
       .collect();
@@ -82,7 +82,15 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   // TODO: Can we map over this?
   for (session_id, session) in sessions_hash.iter() {
     if let Some(encode_dir) = encode_dir_hash.get(session_id) {
-      sessions_to_encode_dir.push(SessionToEncodeDir::new(session_id.clone(), session.clone(), encode_dir.clone()))
+      match encode_dir {
+        EncodeDirType::TVSeries(tv_series_encode_dir) => {
+          sessions_to_encode_dir.push(SessionToEncodeDir::new_tv_series_encode_dir(session_id.clone(), session.clone(), tv_series_encode_dir.clone()))
+        },
+        EncodeDirType::Movie(movie_encode_dir) => {
+          sessions_to_encode_dir.push(SessionToEncodeDir::new_movie_encode_dir(session_id.clone(), session.clone(), movie_encode_dir.clone()))
+        },
+    }
+
     }
   }
 

@@ -264,14 +264,34 @@ pub struct MovieRenameFile {
 
 
 #[derive(Debug, Clone)]
-pub struct EncodeDir {
+pub enum EncodeDirType {
+  TVSeries(TVSeriesEncodeDir),
+  Movie(MovieEncodeDir),
+}
+
+pub trait EncodeDirPathAware {
+  fn path(&self) -> PathBuf;
+}
+
+pub trait LocationAware {
+  fn location(&self) -> String;
+}
+
+#[derive(Debug, Clone)]
+pub struct TVSeriesEncodeDir {
   pub path: PathBuf,
-  // TODO: Why would we need a season for a movie encode?
   pub season: String,
   pub session_id: SessionId,
 }
 
-impl TryFrom<EntryType> for EncodeDir {
+#[derive(Debug, Clone)]
+pub struct MovieEncodeDir {
+  pub path: PathBuf,
+  pub session_id: SessionId,
+  pub movie_name: MovieName
+}
+
+impl TryFrom<EntryType> for EncodeDirType {
     type Error = ();
 
     fn try_from(value: EntryType) -> Result<Self, Self::Error> {
@@ -279,11 +299,25 @@ impl TryFrom<EntryType> for EncodeDir {
         EntryType::TVSeriesEncode { path, season, session } => {
           let session_id = session;
           Ok(
-            EncodeDir {
-              path,
-              season,
-              session_id
-            }
+            EncodeDirType::TVSeries(
+              TVSeriesEncodeDir {
+                path,
+                season,
+                session_id
+              }
+            )
+          )
+        },
+        EntryType::MovieEncode { path, session, movie_name } => {
+          let session_id = session;
+          Ok(
+            EncodeDirType::Movie(
+              MovieEncodeDir {
+                path,
+                session_id,
+                movie_name
+              }
+            )
           )
         },
         _ => {
@@ -293,6 +327,33 @@ impl TryFrom<EntryType> for EncodeDir {
   }
 }
 
+impl SessionTypeAware for EncodeDirType {
+    fn session_id(&self) -> SessionId {
+      match self {
+        EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.session_id.clone(),
+        EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.session_id.clone(),
+      }
+    }
+}
+
+impl EncodeDirPathAware for EncodeDirType {
+    fn path(&self) -> PathBuf {
+        match self {
+            EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.path.clone(),
+            EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.path.clone(),
+        }
+    }
+}
+
+
+impl LocationAware for EncodeDirType {
+    fn location(&self) -> String {
+      match self {
+        EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.season.clone(),
+        EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.movie_name.to_string(),
+      }
+    }
+}
 
 impl EntryType {
   pub fn new_tv_series_rename<P: AsRef<Path>>(path: P, session: &str, episode: &str, file: &str) -> Self {
@@ -369,15 +430,23 @@ impl Session {
 pub struct SessionToEncodeDir {
   session_id: SessionId,
   session: Session,
-  encode_dir: EncodeDir
+  encode_dir: EncodeDirType
 }
 
 impl SessionToEncodeDir {
-  pub fn new(session_id: SessionId, session: Session, encode_dir: EncodeDir) -> Self {
+  pub fn new_tv_series_encode_dir(session_id: SessionId, session: Session, encode_dir: TVSeriesEncodeDir) -> Self {
     Self {
       session_id,
       session,
-      encode_dir
+      encode_dir: EncodeDirType::TVSeries(encode_dir)
+    }
+  }
+
+  pub fn new_movie_encode_dir(session_id: SessionId, session: Session, encode_dir: MovieEncodeDir) -> Self {
+    Self {
+      session_id,
+      session,
+      encode_dir: EncodeDirType::Movie(encode_dir)
     }
   }
 }
@@ -391,7 +460,7 @@ impl SessionToEncodeDir {
     &self.session
   }
 
-  pub fn encode_dir(&self) -> &EncodeDir {
+  pub fn encode_dir(&self) -> &EncodeDirType {
     &self.encode_dir
   }
 }

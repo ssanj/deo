@@ -59,7 +59,11 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
   for sed in sessions_to_encode_dir {
     let files = sed.session().files();
     let num = files.len();
-    println!("{} ({}) has the following {} files:", style(&sed.encode_dir().season).underlined(), style(sed.session_id().id()).yellow().bold(), num);
+    let location = match &sed.encode_dir() {
+        crate::entry_type::EncodeDirType::TVSeries(tvseries_encode_dir) => &tvseries_encode_dir.season,
+        crate::entry_type::EncodeDirType::Movie(movie_encode_dir) => &movie_encode_dir.movie_name.to_string(),
+    };
+    println!("{} ({}) has the following {} files:", style(location).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
       println!(" - {}", file.mkv_file());
     }
