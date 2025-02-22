@@ -136,6 +136,10 @@ pub trait SessionTypeAware {
   fn session_id(&self) -> SessionId;
 }
 
+pub trait EpisodeName {
+  fn episode(&self) -> Option<String>;
+}
+
 pub trait MKVTypeAware {
   fn mkv_file(&self) -> String;
   fn mp4_file(&self) -> String;
@@ -173,6 +177,15 @@ impl MKVTypeAware for RenameTypes {
       RenameTypes::Movie(movie_rename_file) => movie_rename_file.path.clone(),
     }
   }
+}
+
+impl EpisodeName for RenameTypes {
+    fn episode(&self) -> Option<String> {
+      match self {
+        RenameTypes::TVSeries(tvseries_rename_file) => Some(tvseries_rename_file.episode.to_string()),
+        RenameTypes::Movie(_) => None,
+      }
+    }
 }
 
 /// Convert from a collection of RenameFile into a Map<SessionId, Session>

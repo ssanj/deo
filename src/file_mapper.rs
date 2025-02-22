@@ -102,6 +102,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 }
 
 
+// TODO: Make all these regexes safe - don't panic with unwrap
 fn handle_tv_series_rename(path: &Path) -> Option<EntryType> {
     if let Some((_, [session, file, episode, _])) = RENAME_TV_SERIES_FILE_REG.captures(path.to_str().unwrap()).map(|c| c.extract()) {
       Some(EntryType::new_tv_series_rename(path, session, episode, file))
