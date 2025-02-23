@@ -1,7 +1,6 @@
 use args::cli;
 
 mod args;
-mod entry_type;
 mod user_selection;
 mod hb_output_parser;
 mod file_mapper;

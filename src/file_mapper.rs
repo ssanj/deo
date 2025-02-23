@@ -4,7 +4,7 @@ use walkdir::WalkDir;
 use regex::Regex;
 use crate::{debug::*};
 use std::sync::LazyLock;
-use crate::entry_type::SessionToEncodeDir;
+use crate::models::SessionToEncodeDir;
 use crate::models::SessionId;
 use crate::models::RenameTypes;
 use crate::models::SessionTypeAware;

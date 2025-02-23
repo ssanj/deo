@@ -3,7 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::entry_type::SessionToEncodeDir;
+use crate::models::SessionToEncodeDir;
 use crate::models::MKVTypeAware;
 use crate::models::EncodeDirType;
 

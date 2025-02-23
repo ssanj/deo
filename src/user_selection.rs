@@ -1,10 +1,11 @@
 use std::fmt;
 use console::style;
 
-use crate::{entry_type::SessionToEncodeDir, profiles::ProfileConfigItem};
+use crate::profiles::ProfileConfigItem;
 use crate::models::SessionId;
 use crate::models::RenameTypes;
 use crate::models::EncodeDirType;
+use crate::models::SessionToEncodeDir;
 
 pub struct UserSelection {
   session_id: SessionId,

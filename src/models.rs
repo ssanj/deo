@@ -4,6 +4,7 @@ mod rename_types;
 mod session;
 mod entry_type;
 mod encode_dir_type;
+mod session_to_encode_dir;
 
 pub use session_id::SessionId as SessionId;
 pub use movie_name::MovieName as MovieName;
@@ -18,3 +19,4 @@ pub use encode_dir_type::EncodeDirPathAware as EncodeDirPathAware;
 pub use encode_dir_type::LocationAware as LocationAware;
 pub use encode_dir_type::TVSeriesEncodeDir as TVSeriesEncodeDir;
 pub use encode_dir_type::MovieEncodeDir as MovieEncodeDir;
+pub use session_to_encode_dir::SessionToEncodeDir as SessionToEncodeDir;
