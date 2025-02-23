@@ -1,7 +1,8 @@
 use std::fmt;
 use console::style;
 
-use crate::{entry_type::{EncodeDirType, RenameTypes, SessionId, SessionToEncodeDir}, profiles::ProfileConfigItem};
+use crate::{entry_type::{EncodeDirType, RenameTypes, SessionToEncodeDir}, profiles::ProfileConfigItem};
+use crate::models::SessionId;
 
 pub struct UserSelection {
   session_id: SessionId,

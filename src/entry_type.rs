@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::fmt;
 use std::collections::HashMap;
+use crate::models::SessionId;
 
 // TODO: Extend EntryType to have one rename for tv series and one for movies
 // This class models something that can be encoded later.
@@ -65,25 +66,6 @@ pub enum EntryType {
 
   InvalidEncodeDirPath {
     defined_path: String
-  }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
-pub struct SessionId(String);
-
-impl SessionId {
-  pub fn new(value: &str) -> Self {
-    Self(value.to_string())
-  }
-
-  pub fn id(&self) -> &str {
-    &self.0
-  }
-}
-
-impl fmt::Display for SessionId {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-      write!(f, "{}", self.0)
   }
 }
 

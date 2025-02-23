@@ -12,6 +12,7 @@ mod error;
 mod debug;
 mod colours;
 mod workflow;
+mod models;
 
 fn main() {
   workflow::perform(cli::get_cli_args())

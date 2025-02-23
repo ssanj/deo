@@ -9,7 +9,7 @@ use crate::entry_type::EpisodeName;
 use crate::entry_type::LocationAware;
 use crate::entry_type::MKVTypeAware;
 use crate::entry_type::Session;
-use crate::entry_type::SessionId;
+use crate::models::SessionId;
 use crate::entry_type::SessionToEncodeDir;
 use crate::colours::*;
 use crate::entry_type::SessionTypeAware;

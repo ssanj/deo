@@ -4,7 +4,8 @@ use walkdir::WalkDir;
 use regex::Regex;
 use crate::{debug::*, entry_type::{RenameTypes, SessionTypeAware}};
 use std::sync::LazyLock;
-use crate::entry_type::{EncodeDirType, EntryType, Session, SessionId, SessionToEncodeDir};
+use crate::entry_type::{EncodeDirType, EntryType, Session, SessionToEncodeDir};
+use crate::models::SessionId;
 
 static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap());
 static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/(.+.mkv)$").unwrap());
