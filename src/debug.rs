@@ -106,7 +106,7 @@ pub fn dump_encodes_hash(encode_dir_hash: &HashMap<SessionId, EncodeDirType>, ve
       let encode_path = ed.path();
       let path = encode_path.to_string_lossy();
       let location = ed.location();
-      let msg = style(format!("SessionId:{}\n  session:{session_id}\n  {path}\n  {location}", si.id())).bg(GRAY);
+      let msg = style(format!("SessionId:{}\n  session:{session_id}\n  path:{path}\n  location:{location}", si.id())).bg(GRAY);
       println!("{}", msg);
       println!();
     }
@@ -128,7 +128,7 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
       let msg = style(format!("SessionId:{session_id}")).bg(GRAY);
       println!("{}", msg);
 
-      let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {location}")).bg(GRAY);
+      let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    path:{encodes_path}\n    location:{location}")).bg(GRAY);
       println!("{}", encodes_msg);
 
       for file in sted.session().files() {

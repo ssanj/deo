@@ -72,7 +72,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
     for input in selection.rename_files() {
       bar.set_message("0");
       let input_file = &input.mkv_path();
-      let output_file = selection.encode_dir().path().join(&input.mp4_file());
+      let output_file = selection.encode_dir().path().join(input.mp4_file());
       bar.set_prefix(input.mkv_file());
 
       let profile = selection.profile();
@@ -110,7 +110,8 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
       let lines = stdout_reader.lines();
 
       for line in lines {
-        match parse(line.unwrap()) {
+        let unwrapped_line = line.unwrap();
+        match parse(&unwrapped_line) {
           Output::Progress(progress) => {
             bar.set_position(progress as u64)
           },
@@ -118,12 +119,13 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
             bar.set_message(pass.to_string())
           },
           Output::Ignore => (),
-          Output::Done(_) => {
+          Output::Done(error_code) => {
+            eprint!("Could not parse handbrake output line: {}, error_code: {}", &unwrapped_line, error_code);
             bar.finish_and_clear()
           }
         }
-
       }
+
       let exit_status = handbrake.wait().expect("Could not get output");
 
       let code = exit_status.code().expect("Could not get exit code");

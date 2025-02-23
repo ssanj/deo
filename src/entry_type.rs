@@ -434,7 +434,7 @@ impl Session {
 
   pub fn files(&self) -> Vec<RenameTypes> {
     let mut sorted_files = self.files.clone();
-    sorted_files.sort_by(|a, b| a.mkv_file().cmp(&b.mkv_file()));
+    sorted_files.sort_by_key(|a| a.mkv_file());
     sorted_files
   }
 }
