@@ -4,7 +4,8 @@ use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use crate::entry_type::{EncodeDirPathAware, MKVTypeAware};
+use crate::models::EncodeDirPathAware;
+use crate::models::MKVTypeAware;
 use crate::error::{DeoEncodingError, HandbrakeCommand, LogFile};
 use crate::user_selection::UserSelection;
 use crate::hb_output_parser::{parse, Output};

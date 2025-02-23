@@ -3,7 +3,9 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::entry_type::{MKVTypeAware, SessionToEncodeDir};
+use crate::entry_type::SessionToEncodeDir;
+use crate::models::MKVTypeAware;
+use crate::models::EncodeDirType;
 
 #[allow(clippy::enum_variant_names)]
 pub enum Interaction {
@@ -60,8 +62,8 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
     let files = sed.session().files();
     let num = files.len();
     let location = match &sed.encode_dir() {
-        crate::entry_type::EncodeDirType::TVSeries(tvseries_encode_dir) => &tvseries_encode_dir.season,
-        crate::entry_type::EncodeDirType::Movie(movie_encode_dir) => &movie_encode_dir.movie_name.to_string(),
+        EncodeDirType::TVSeries(tvseries_encode_dir) => &tvseries_encode_dir.season,
+        EncodeDirType::Movie(movie_encode_dir) => &movie_encode_dir.movie_name.to_string(),
     };
     println!("{} ({}) has the following {} files:", style(location).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {

@@ -2,17 +2,17 @@ use std::collections::HashMap;
 
 use console::style;
 
-use crate::entry_type::EncodeDirPathAware;
-use crate::entry_type::EncodeDirType;
-use crate::entry_type::EntryType;
-use crate::entry_type::EpisodeName;
-use crate::entry_type::LocationAware;
-use crate::entry_type::MKVTypeAware;
-use crate::entry_type::Session;
+use crate::models::LocationAware;
+use crate::models::EncodeDirType;
+use crate::models::EncodeDirPathAware;
+use crate::models::EntryType;
+use crate::models::EpisodeName;
+use crate::models::MKVTypeAware;
+use crate::models::Session;
 use crate::models::SessionId;
 use crate::entry_type::SessionToEncodeDir;
+use crate::models::SessionTypeAware;
 use crate::colours::*;
-use crate::entry_type::SessionTypeAware;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
