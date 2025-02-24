@@ -5,10 +5,14 @@ mod session;
 mod entry_type;
 mod encode_dir_type;
 mod session_to_encode_dir;
+mod tv_series;
+mod movie;
 
 pub use session_id::SessionId as SessionId;
 pub use movie_name::MovieName as MovieName;
 pub use rename_types::RenameTypes as RenameTypes;
+pub use rename_types::TVSeriesRenameFile as TVSeriesRenameFile;
+pub use rename_types::MovieRenameFile as MovieRenameFile;
 pub use rename_types::SessionTypeAware as SessionTypeAware;
 pub use rename_types::EpisodeName as EpisodeName;
 pub use rename_types::MKVTypeAware as MKVTypeAware;
