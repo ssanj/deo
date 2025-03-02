@@ -15,9 +15,6 @@ pub trait EncodeDirPathAware {
   fn encode_dir_path(&self) -> PathBuf;
 }
 
-pub trait LocationAware {
-  fn location(&self) -> String;
-}
 
 #[derive(Debug, Clone)]
 pub struct TVSeriesEncodeDir {
@@ -105,14 +102,5 @@ impl FromIterator<EncodeDirType> for (HashMap<SessionId, TVSeriesEncodeDir>, Has
           .collect();
 
       (tv_encodes_hash, movie_encodes_hash)
-    }
-}
-
-impl LocationAware for EncodeDirType {
-    fn location(&self) -> String {
-      match self {
-        EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.season.clone(),
-        EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.movie_name.to_string(),
-      }
     }
 }

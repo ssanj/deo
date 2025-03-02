@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use super::EncodeDirPathAware;
 use super::InputFile;
-use super::LocationAware;
 use super::SessionId;
 use super::TVSeriesEncodeDir;
 use super::MovieEncodeDir;
@@ -111,17 +110,15 @@ impl SessionToEncodeDir {
         SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.session_id(),
     }
   }
-}
 
-
-impl LocationAware for SessionToEncodeDir {
-    fn location(&self) -> String {
-      match self {
-        SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.encode_dir().season,
-        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().movie_name.name(),
-      }
+  pub fn location(&self) -> String {
+    match self {
+      SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.encode_dir().season,
+      SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().movie_name.name(),
     }
+  }
 }
+
 
 impl EncodeDirPathAware for SessionToEncodeDir {
     fn encode_dir_path(&self) -> std::path::PathBuf {

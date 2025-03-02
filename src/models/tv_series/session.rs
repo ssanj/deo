@@ -21,4 +21,8 @@ impl TVSeriesSession {
   pub fn files(&self) -> Vec<TVSeriesRenameFile> {
     self.files.clone()
   }
+
+  pub fn session_id(&self) -> SessionId {
+    self.session_id.clone()
+  }
 }

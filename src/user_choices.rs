@@ -3,7 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::models::{LocationAware, SessionToEncodeDir};
+use crate::models::SessionToEncodeDir;
 
 #[allow(clippy::enum_variant_names)]
 pub enum Interaction {

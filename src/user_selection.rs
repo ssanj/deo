@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use console::style;
 
 use crate::models::EncodeDirPathAware;
-use crate::models::LocationAware;
 use crate::profiles::ProfileConfigItem;
 use crate::models::SessionId;
 use crate::models::SessionToEncodeDir;
