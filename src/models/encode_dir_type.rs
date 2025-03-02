@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use super::SessionId;
@@ -12,7 +13,7 @@ pub enum EncodeDirType {
 }
 
 pub trait EncodeDirPathAware {
-  fn path(&self) -> PathBuf;
+  fn encode_dir_path(&self) -> PathBuf;
 }
 
 pub trait LocationAware {
@@ -69,6 +70,45 @@ impl TryFrom<EntryType> for EncodeDirType {
   }
 }
 
+/// Convert from a collection of EncodeDirType into a pair of HashMaps for each EncodeDirType:
+/// `HashMap<SessionId, Vec<TVSeriesEncodeDir>>` and
+/// `HashMap<SessionId, Vec<MovieEncodeDir>>`
+impl FromIterator<EncodeDirType> for (HashMap<SessionId, TVSeriesEncodeDir>, HashMap<SessionId, MovieEncodeDir>) {
+
+  fn from_iter<T: IntoIterator<Item = EncodeDirType>>(renames: T) -> Self {
+    let mut hash: HashMap<SessionId, (Option<TVSeriesEncodeDir>, Option<MovieEncodeDir>)> = HashMap::new();
+      for rename in renames {
+        match rename {
+            EncodeDirType::TVSeries(tvseries_encode_dir) => {
+              hash.insert(tvseries_encode_dir.clone().session_id, (Some(tvseries_encode_dir), None));
+            },
+            EncodeDirType::Movie(movie_encode_dir) => {
+              hash.insert(movie_encode_dir.clone().session_id, (None, Some(movie_encode_dir)));
+            },
+        }
+      }
+
+      let tv_encodes_hash: HashMap<SessionId, TVSeriesEncodeDir> =
+        hash
+          .clone()
+          .into_iter()
+          .filter_map(|(k, (p_tv, _))| {
+            p_tv.map(|tv| (k.clone(), tv))
+          })
+          .collect();
+
+      let movie_encodes_hash: HashMap<SessionId, MovieEncodeDir> =
+        hash
+          .into_iter()
+          .filter_map(|(k, (_, p_movie))| {
+            p_movie.map(|movie| (k.clone(), movie))
+          })
+          .collect();
+
+      (tv_encodes_hash, movie_encodes_hash)
+    }
+}
+
 impl SessionTypeAware for EncodeDirType {
     fn session_id(&self) -> SessionId {
       match self {
@@ -79,7 +119,7 @@ impl SessionTypeAware for EncodeDirType {
 }
 
 impl EncodeDirPathAware for EncodeDirType {
-    fn path(&self) -> PathBuf {
+    fn encode_dir_path(&self) -> PathBuf {
         match self {
             EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.path.clone(),
             EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.path.clone(),

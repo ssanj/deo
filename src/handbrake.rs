@@ -73,7 +73,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
     for input in selection.rename_files() {
       bar.set_message("0");
       let input_file = &input.mkv_path();
-      let output_file = selection.encode_dir().path().join(input.mp4_file());
+      let output_file = selection.encode_dir_path().join(input.mp4_file());
       bar.set_prefix(input.mkv_file());
 
       let profile = selection.profile();

@@ -24,4 +24,8 @@ impl Session {
     sorted_files.sort_by_key(|a| a.mkv_file());
     sorted_files
   }
+
+  pub fn id(&self) -> SessionId {
+    self.session_id.clone()
+  }
 }

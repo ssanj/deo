@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
 
+use super::movie::MovieSession;
+use super::tv_series::TVSeriesSession;
 use super::SessionId;
 use super::Session;
 use super::EntryType;
@@ -52,6 +54,10 @@ pub trait SessionTypeAware {
   fn session_id(&self) -> SessionId;
 }
 
+pub trait SessionFilesAware {
+  fn files(&self) -> Vec<RenameTypes>;
+}
+
 pub trait EpisodeName {
   fn episode(&self) -> Option<String>;
 }
@@ -95,6 +101,34 @@ impl MKVTypeAware for RenameTypes {
   }
 }
 
+impl MKVTypeAware for TVSeriesRenameFile {
+    fn mkv_file(&self) -> String {
+      self.mkv_file.clone()
+    }
+
+    fn mp4_file(&self) -> String {
+        self.mp4_file.clone()
+    }
+
+    fn mkv_path(&self) -> PathBuf {
+        self.path.clone()
+    }
+}
+
+impl MKVTypeAware for MovieRenameFile {
+    fn mkv_file(&self) -> String {
+        self.mkv_file.clone()
+    }
+
+    fn mp4_file(&self) -> String {
+        self.mp4_file.clone()
+    }
+
+    fn mkv_path(&self) -> PathBuf {
+        self.path.clone()
+    }
+}
+
 impl EpisodeName for RenameTypes {
     fn episode(&self) -> Option<String> {
       match self {
@@ -105,6 +139,7 @@ impl EpisodeName for RenameTypes {
 }
 
 /// Convert from a collection of RenameFile into a Map<SessionId, Session>
+//TODO: Remove
 impl FromIterator<RenameTypes> for HashMap<SessionId, Session> {
 
   fn from_iter<T: IntoIterator<Item = RenameTypes>>(renames: T) -> Self {
@@ -122,6 +157,47 @@ impl FromIterator<RenameTypes> for HashMap<SessionId, Session> {
         .collect()
     }
 }
+
+
+/// Convert from a collection of RenameFile into a Map<SessionId, TVSeriesSession>
+impl FromIterator<RenameTypes> for (HashMap<SessionId, TVSeriesSession>, HashMap<SessionId, MovieSession>) {
+
+  fn from_iter<T: IntoIterator<Item = RenameTypes>>(renames: T) -> Self {
+    let mut hash: HashMap<SessionId, (Vec<TVSeriesRenameFile>, Vec<MovieRenameFile>)> = HashMap::new();
+      for rename in renames {
+        match rename {
+            RenameTypes::TVSeries(tvseries_rename_file) => {
+              hash
+                .entry(tvseries_rename_file.clone().session)
+                .and_modify(|v| v.0.push(tvseries_rename_file.clone()))
+                .or_insert((vec![tvseries_rename_file], vec![]));
+            },
+            RenameTypes::Movie(movie_rename_file) => {
+              hash
+                .entry(movie_rename_file.clone().session)
+                .and_modify(|v| v.1.push(movie_rename_file.clone()))
+                .or_insert((vec![], vec![movie_rename_file]));
+            }
+        }
+      }
+
+      let tv_renames_hash: HashMap<SessionId, TVSeriesSession> =
+        hash
+          .clone()
+          .into_iter()
+          .map(|(k, v)| (k.clone(), TVSeriesSession::new(k, v.0)))
+          .collect();
+
+      let movie_renames_hash: HashMap<SessionId, MovieSession> =
+        hash
+          .into_iter()
+          .map(|(k, v)| (k.clone(), MovieSession::new(k, v.1)))
+          .collect();
+
+      (tv_renames_hash, movie_renames_hash)
+    }
+}
+
 
 impl TryFrom<EntryType> for RenameTypes {
   type Error = ();

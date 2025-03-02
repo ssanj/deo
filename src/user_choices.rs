@@ -3,7 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::models::SessionToEncodeDir;
+use crate::models::{LocationAware, SessionToEncodeDir, SessionTypeAware};
 use crate::models::MKVTypeAware;
 use crate::models::EncodeDirType;
 
@@ -59,12 +59,9 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
 
   println!();
   for sed in sessions_to_encode_dir {
-    let files = sed.session().files();
+    let files = sed.rename_files();
     let num = files.len();
-    let location = match &sed.encode_dir() {
-        EncodeDirType::TVSeries(tvseries_encode_dir) => &tvseries_encode_dir.season,
-        EncodeDirType::Movie(movie_encode_dir) => &movie_encode_dir.movie_name.to_string(),
-    };
+    let location = &sed.location();
     println!("{} ({}) has the following {} files:", style(location).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
       println!(" - {}", file.mkv_file());

@@ -56,53 +56,40 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 
   dump_unmatched_entry_types(&all_entry_types, verbose);
 
-  let sessions_hash: HashMap<SessionId, Session> =
-    entry_types
-      .iter()
-      .filter_map(|session_type| {
-        <EntryType as TryInto<RenameTypes>>::try_into(session_type.clone())
+
+  let (tv_series_session, movies_session) =
+      entry_types
+        .iter()
+        .filter_map(|entry_type| {
+          <EntryType as TryInto<RenameTypes>>::try_into(entry_type.clone())
+            .ok()
+          })
+        .collect();
+
+// TODO: check for session_ids with both tv series and movies. That shouldn't be allowed.
+// TODO: dump_sessions_hash(&sessions_hash, verbose);
+
+
+  let (tv_series_encode_dir, movie_encode_dir) =
+      entry_types
+      .into_iter()
+      .filter_map(|entry_type| {
+        <EntryType as TryInto<EncodeDirType>>::try_into(entry_type.clone())
           .ok()
         })
       .collect();
 
+  // TODO: dump these values
 
-  dump_sessions_hash(&sessions_hash, verbose);
+  // TODO: Given a HashMap<SessionId, TVSeriesSession>  and a HashMap<SessionId, TVSeriesEncodeDir>
+  let tv_series_session_to_encode_dir = SessionToEncodeDir::fromTVSeriesElements(tv_series_session, tv_series_encode_dir);
+  let movie_session_to_encode_dir = SessionToEncodeDir::fromMovieElements(movies_session, movie_encode_dir);
+  // TODO: return a Vec<TVSeriesToEncodeDir> mapping and maybe a Vec of unmatched entries
 
-  let encode_dir_hash: HashMap<SessionId, EncodeDirType> =
-    entry_types
-      .into_iter()
-      .filter_map(|s| {
-        <EntryType as TryInto<EncodeDirType>>::try_into(s)
-          .ok()
-          .map(|encode_dir| {
-            (encode_dir.session_id().clone(), encode_dir)
-          })
-      })
-      .collect();
-
-  dump_encodes_hash(&encode_dir_hash, verbose);
-
-  let mut sessions_to_encode_dir: Vec<SessionToEncodeDir> = vec![];
-
-  // Map from SessionId -> SessionToEncodeDir
-  // TODO: Can we map over this?
-  for (session_id, session) in sessions_hash.iter() {
-    if let Some(encode_dir) = encode_dir_hash.get(session_id) {
-      match encode_dir {
-        EncodeDirType::TVSeries(tv_series_encode_dir) => {
-          sessions_to_encode_dir.push(SessionToEncodeDir::new_tv_series_encode_dir(session_id.clone(), session.clone(), tv_series_encode_dir.clone()))
-        },
-        EncodeDirType::Movie(movie_encode_dir) => {
-          sessions_to_encode_dir.push(SessionToEncodeDir::new_movie_encode_dir(session_id.clone(), session.clone(), movie_encode_dir.clone()))
-        },
-    }
-
-    }
-  }
-
+  let sessions_to_encode_dir: Vec<SessionToEncodeDir> = tv_series_session_to_encode_dir.into_iter().chain(movie_session_to_encode_dir.into_iter()).collect();
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
 
-  dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
+  // dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
 
   sessions_to_encode_dir
 }

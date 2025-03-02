@@ -8,8 +8,8 @@ impl MovieName {
     Self(value.to_string())
   }
 
-  pub fn id(&self) -> &str {
-    &self.0
+  pub fn name(&self) -> String {
+    self.0.clone()
   }
 }
 

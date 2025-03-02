@@ -1,10 +1,12 @@
 use std::fmt;
+use std::path::PathBuf;
 use console::style;
 
+use crate::models::EncodeDirPathAware;
+use crate::models::LocationAware;
+use crate::models::MKVTypeAware;
 use crate::profiles::ProfileConfigItem;
 use crate::models::SessionId;
-use crate::models::RenameTypes;
-use crate::models::EncodeDirType;
 use crate::models::SessionToEncodeDir;
 
 pub struct UserSelection {
@@ -22,12 +24,12 @@ impl UserSelection {
     }
   }
 
-  pub fn rename_files(&self) -> Vec<RenameTypes> {
-    self.session_to_encode_dir.session().files()
+  pub fn rename_files(&self) -> Vec<Box<dyn MKVTypeAware>> {
+    self.session_to_encode_dir.rename_files()
   }
 
-  pub fn encode_dir(&self) -> &EncodeDirType {
-    self.session_to_encode_dir.encode_dir()
+  pub fn encode_dir_path(&self) -> PathBuf {
+    self.session_to_encode_dir.encode_dir_path()
   }
 
   pub fn profile(&self) -> &ProfileConfigItem {
@@ -38,16 +40,8 @@ impl UserSelection {
 impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let UserSelection { session_id, session_to_encode_dir, profile } = self;
-    match &session_to_encode_dir.encode_dir() {
-        EncodeDirType::TVSeries(tvseries_encode_dir) => {
-          let season = &tvseries_encode_dir.season;
-          write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(season).underlined(), style(profile).blue())
-        },
-        EncodeDirType::Movie(movie_encode_dir) => {
-          let movie_name = &movie_encode_dir.movie_name;
-          write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(movie_name).underlined(), style(profile).blue())
-        },
-    }
+    let location = &session_to_encode_dir.location();
+    write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(location).underlined(), style(profile).blue())
   }
 }
 
