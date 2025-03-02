@@ -64,7 +64,7 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
     let location = &sed.location();
     println!("{} ({}) has the following {} files:", style(location).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
-      println!(" - {}", file.mkv_file());
+      println!(" - {}", file.mkv_file);
     }
 
     let selected_profile = show_select(&profile_options, "Select encoding profile:").unwrap();

@@ -8,7 +8,6 @@ use crate::error::{DeoEncodingError, HandbrakeCommand, LogFile};
 use crate::user_selection::UserSelection;
 use crate::hb_output_parser::{parse, Output};
 use super::HandbrakeInfo;
-use super::HandbrakeInputFile;
 
 pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
   println!("encoding...");
@@ -31,7 +30,7 @@ pub fn encode(selections: Vec<UserSelection>) -> Result<(), DeoEncodingError> {
     selections
       .iter()
       .map(|sel| {
-        sel.rename_files().len() as u64
+        sel.session_to_encode_dir().file_count()
       })
       .sum();
 

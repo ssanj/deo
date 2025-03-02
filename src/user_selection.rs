@@ -24,10 +24,6 @@ impl UserSelection {
     }
   }
 
-  pub fn rename_files(&self) -> Vec<Box<dyn MKVTypeAware>> {
-    self.session_to_encode_dir.rename_files()
-  }
-
   pub fn session_to_encode_dir(&self) -> SessionToEncodeDir {
     self.session_to_encode_dir.clone()
   }

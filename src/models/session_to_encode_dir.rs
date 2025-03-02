@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use super::EncodeDirPathAware;
 use super::EncodeDirType;
+use super::InputFile;
 use super::LocationAware;
 use super::MKVTypeAware;
 use super::RenameTypes;
@@ -72,22 +73,39 @@ impl SessionToEncodeDir {
       .collect()
   }
 
-  pub fn rename_files(&self) -> Vec<Box<dyn MKVTypeAware>> {
+  pub fn rename_files(&self) -> Vec<InputFile> {
     let result = match self.clone() {
         SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) =>
           tvseries_to_encode_dir
             .session()
             .files()
             .into_iter()
-            .map(|tv| Box::new(tv) as Box::<dyn MKVTypeAware>)
+            .map(|tv| tv.into())
             .collect(),
         SessionToEncodeDir::MovieMapping(movie_to_encode_dir) =>
           movie_to_encode_dir
             .session()
             .files()
             .into_iter()
-            .map(|movie| Box::new(movie) as Box::<dyn MKVTypeAware>)
+            .map(|movie| movie.into())
             .collect()
+    };
+
+    result
+  }
+
+  pub fn file_count(&self) -> u64 {
+    let result = match self.clone() {
+        SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) =>
+          tvseries_to_encode_dir
+            .session()
+            .files()
+            .len() as u64,
+        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) =>
+          movie_to_encode_dir
+            .session()
+            .files()
+            .len() as u64
     };
 
     result

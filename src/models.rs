@@ -7,6 +7,7 @@ mod encode_dir_type;
 mod session_to_encode_dir;
 mod tv_series;
 mod movie;
+mod input_file;
 
 pub use session_id::SessionId as SessionId;
 pub use movie_name::MovieName as MovieName;
@@ -24,3 +25,4 @@ pub use encode_dir_type::LocationAware as LocationAware;
 pub use encode_dir_type::TVSeriesEncodeDir as TVSeriesEncodeDir;
 pub use encode_dir_type::MovieEncodeDir as MovieEncodeDir;
 pub use session_to_encode_dir::SessionToEncodeDir as SessionToEncodeDir;
+pub use input_file::InputFile as InputFile;
