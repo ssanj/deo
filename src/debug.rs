@@ -16,101 +16,101 @@ use crate::colours::*;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
 pub fn dump_entry_types(entry_types: &[EntryType], verbose: bool) {
-  if verbose {
-    println!("{}", style("-- Entry Names --").bg(LIGHT).fg(BLACK));
-    for et in entry_types {
-      match et {
-        EntryType::TVSeriesRename { path, session, episode, file } => {
-          let msg = style(format!("EntryType.TV.Rename:\n  session:{}\n  path:{}\n  episode:{}\n  file:{}", session.id(), path.to_string_lossy(), episode, file)).bg(GRAY);
-          println!("{}", msg);
-          println!()
-        },
+  // if verbose {
+  //   println!("{}", style("-- Entry Names --").bg(LIGHT).fg(BLACK));
+  //   for et in entry_types {
+  //     match et {
+  //       EntryType::TVSeriesRename { path, session, episode, file } => {
+  //         let msg = style(format!("EntryType.TV.Rename:\n  session:{}\n  path:{}\n  episode:{}\n  file:{}", session.id(), path.to_string_lossy(), episode, file)).bg(GRAY);
+  //         println!("{}", msg);
+  //         println!()
+  //       },
 
-        EntryType::TVSeriesEncode { session, path, season } => {
-          let msg = style(format!("EntryType.TV.Encode:\n  session:{}\n  path:{}\n  season:{}", session.id(), path.to_string_lossy(), season)).bg(GRAY);
-          println!("{}", msg);
-          println!()
-        },
+  //       EntryType::TVSeriesEncode { session, path, season } => {
+  //         let msg = style(format!("EntryType.TV.Encode:\n  session:{}\n  path:{}\n  season:{}", session.id(), path.to_string_lossy(), season)).bg(GRAY);
+  //         println!("{}", msg);
+  //         println!()
+  //       },
 
-        EntryType::MovieRename { path, session, file } => {
-          let msg = style(format!("EntryType.Movie.Rename:\n  session:{}\n  path:{}\n  file:{}", session.id(), path.to_string_lossy(), file)).bg(GRAY);
-          println!("{}", msg);
-          println!()
-        },
+  //       EntryType::MovieRename { path, session, file } => {
+  //         let msg = style(format!("EntryType.Movie.Rename:\n  session:{}\n  path:{}\n  file:{}", session.id(), path.to_string_lossy(), file)).bg(GRAY);
+  //         println!("{}", msg);
+  //         println!()
+  //       },
 
-        EntryType::MovieEncode { session, path, movie_name } => {
-          let msg = style(format!("EntryType.Movie.Encode:\n  session:{}\n  path:{}\n  movie_name:{}", session.id(), path.to_string_lossy(), movie_name)).bg(GRAY);
-          println!("{}", msg);
-          println!()
-        },
+  //       EntryType::MovieEncode { session, path, movie_name } => {
+  //         let msg = style(format!("EntryType.Movie.Encode:\n  session:{}\n  path:{}\n  movie_name:{}", session.id(), path.to_string_lossy(), movie_name)).bg(GRAY);
+  //         println!("{}", msg);
+  //         println!()
+  //       },
 
-        _ => ()
-      }
-    }
-  }
+  //       _ => ()
+  //     }
+  //   }
+  // }
 }
 
 pub fn dump_unmatched_entry_types(entry_types: &[EntryType], verbose: bool) {
-  if verbose {
-    println!("{}", style("-- Unmatched Entry Names --").bg(LIGHT_RED).fg(BLACK));
-    for et in entry_types {
-      match et {
-        EntryType::UnknownFileType { path } => {
-          let msg = format!("{}\n  path:{}", style("EntryType.Unknown:").bg(LIGHT_RED_2), path.to_string_lossy());
-          println!("{}", msg);
-          println!()
-        },
-        EntryType::InvalidEncodeDirPath { defined_path } => {
-          let msg = format!("{}\n  path:{}", style("EntryType.InvalidEncodeDirPath:").bg(RED_2), &defined_path);
-          println!("{}", msg);
-          println!()
-        },
-        _ => ()
-      }
-    }
-  }
+  // if verbose {
+  //   println!("{}", style("-- Unmatched Entry Names --").bg(LIGHT_RED).fg(BLACK));
+  //   for et in entry_types {
+  //     match et {
+  //       EntryType::UnknownFileType { path } => {
+  //         let msg = format!("{}\n  path:{}", style("EntryType.Unknown:").bg(LIGHT_RED_2), path.to_string_lossy());
+  //         println!("{}", msg);
+  //         println!()
+  //       },
+  //       EntryType::InvalidEncodeDirPath { defined_path } => {
+  //         let msg = format!("{}\n  path:{}", style("EntryType.InvalidEncodeDirPath:").bg(RED_2), &defined_path);
+  //         println!("{}", msg);
+  //         println!()
+  //       },
+  //       _ => ()
+  //     }
+  //   }
+  // }
 
 }
 
 pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: bool) {
-  if verbose {
-    println!("{}", style("-- Sessions Hash --").bg(BLUE));
-    for (si, sess) in session_hash {
-      let msg = style(format!("SessionId:{}", si.id())).bg(GRAY);
-      println!("{}", msg);
-      for file in sess.files() {
-        let episode = file.episode();
-        let pathbuf = file.mkv_path();
-        let path = pathbuf.to_string_lossy();
-        let episode_str = match episode {
-            Some(e) => format!("  episode:{e}\n"),
-            None => "".to_string(),
-        };
-        let mkv_file = file.mkv_file();
-        let mp4_file = file.mp4_file();
-        let session_id = file.session_id();
-        let msg = style(format!("\n  session:{session_id}\n  path:{path}\n{episode_str}  mkv_file:{mkv_file}\n  mp4_file:{mp4_file}")).bg(GRAY);
-        println!("{}", msg);
-        println!();
-      }
-    }
-  }
+  // if verbose {
+  //   println!("{}", style("-- Sessions Hash --").bg(BLUE));
+  //   for (si, sess) in session_hash {
+  //     let msg = style(format!("SessionId:{}", si.id())).bg(GRAY);
+  //     println!("{}", msg);
+  //     for file in sess.files() {
+  //       let episode = file.episode();
+  //       let pathbuf = file.mkv_path();
+  //       let path = pathbuf.to_string_lossy();
+  //       let episode_str = match episode {
+  //           Some(e) => format!("  episode:{e}\n"),
+  //           None => "".to_string(),
+  //       };
+  //       let mkv_file = file.mkv_file();
+  //       let mp4_file = file.mp4_file();
+  //       let session_id = file.session_id();
+  //       let msg = style(format!("\n  session:{session_id}\n  path:{path}\n{episode_str}  mkv_file:{mkv_file}\n  mp4_file:{mp4_file}")).bg(GRAY);
+  //       println!("{}", msg);
+  //       println!();
+  //     }
+  //   }
+  // }
 }
 
 pub fn dump_encodes_hash(encode_dir_hash: &HashMap<SessionId, EncodeDirType>, verbose: bool) {
-  if verbose {
-    println!("{}", style("-- Encodes Hash --").bg(LIGHT_BLUE));
-    for (si, ed) in encode_dir_hash {
-      let session = ed.session_id();
-      let session_id = session.id();
-      let encode_path = ed.encode_dir_path();
-      let path = encode_path.to_string_lossy();
-      let location = ed.location();
-      let msg = style(format!("SessionId:{}\n  session:{session_id}\n  path:{path}\n  location:{location}", si.id())).bg(GRAY);
-      println!("{}", msg);
-      println!();
-    }
-  }
+  // if verbose {
+  //   println!("{}", style("-- Encodes Hash --").bg(LIGHT_BLUE));
+  //   for (si, ed) in encode_dir_hash {
+  //     let session = ed.session_id();
+  //     let session_id = session.id();
+  //     let encode_path = ed.encode_dir_path();
+  //     let path = encode_path.to_string_lossy();
+  //     let location = ed.location();
+  //     let msg = style(format!("SessionId:{}\n  session:{session_id}\n  path:{path}\n  location:{location}", si.id())).bg(GRAY);
+  //     println!("{}", msg);
+  //     println!();
+  //   }
+  // }
 }
 
 pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir], verbose: bool) {

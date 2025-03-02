@@ -44,7 +44,7 @@ impl SessionToEncodeDir {
   }
 
 
-  pub fn fromTVSeriesElements(tv_series_session: HashMap<SessionId, TVSeriesSession>, tv_series_encode_dir: HashMap<SessionId, TVSeriesEncodeDir>) -> Vec<SessionToEncodeDir> {
+  pub fn from_tvseries_elements(tv_series_session: HashMap<SessionId, TVSeriesSession>, tv_series_encode_dir: HashMap<SessionId, TVSeriesEncodeDir>) -> Vec<SessionToEncodeDir> {
 
     tv_series_session
       .iter()
@@ -58,7 +58,7 @@ impl SessionToEncodeDir {
       .collect()
   }
 
-  pub fn fromMovieElements(movie_session: HashMap<SessionId, MovieSession>, movie_encode_dir: HashMap<SessionId, MovieEncodeDir>) -> Vec<SessionToEncodeDir> {
+  pub fn from_movie_elements(movie_session: HashMap<SessionId, MovieSession>, movie_encode_dir: HashMap<SessionId, MovieEncodeDir>) -> Vec<SessionToEncodeDir> {
 
     movie_session
       .iter()

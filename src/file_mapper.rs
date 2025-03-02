@@ -82,11 +82,16 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   // TODO: dump these values
 
   // TODO: Given a HashMap<SessionId, TVSeriesSession>  and a HashMap<SessionId, TVSeriesEncodeDir>
-  let tv_series_session_to_encode_dir = SessionToEncodeDir::fromTVSeriesElements(tv_series_session, tv_series_encode_dir);
-  let movie_session_to_encode_dir = SessionToEncodeDir::fromMovieElements(movies_session, movie_encode_dir);
+  let tv_series_session_to_encode_dir = SessionToEncodeDir::from_tvseries_elements(tv_series_session, tv_series_encode_dir);
+  let movie_session_to_encode_dir = SessionToEncodeDir::from_movie_elements(movies_session, movie_encode_dir);
   // TODO: return a Vec<TVSeriesToEncodeDir> mapping and maybe a Vec of unmatched entries
 
-  let sessions_to_encode_dir: Vec<SessionToEncodeDir> = tv_series_session_to_encode_dir.into_iter().chain(movie_session_to_encode_dir.into_iter()).collect();
+  let sessions_to_encode_dir: Vec<SessionToEncodeDir> =
+    tv_series_session_to_encode_dir
+      .into_iter()
+      .chain(movie_session_to_encode_dir.into_iter())
+      .collect();
+
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
 
   // dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);

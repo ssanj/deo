@@ -28,6 +28,11 @@ impl UserSelection {
     self.session_to_encode_dir.rename_files()
   }
 
+  pub fn session_to_encode_dir(&self) -> SessionToEncodeDir {
+    self.session_to_encode_dir.clone()
+  }
+
+
   pub fn encode_dir_path(&self) -> PathBuf {
     self.session_to_encode_dir.encode_dir_path()
   }
