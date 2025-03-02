@@ -1,4 +1,3 @@
-use super::SessionTypeAware;
 use super::SessionId;
 use super::TVSeriesSession;
 use super::TVSeriesEncodeDir;
@@ -26,11 +25,9 @@ impl TVSeriesToEncodeDir {
   pub fn encode_dir(&self) -> TVSeriesEncodeDir {
     self.encode_dir.clone()
   }
-}
 
-impl SessionTypeAware for TVSeriesToEncodeDir {
-    fn session_id(&self) -> SessionId {
-      self.session_id.clone()
-    }
+  pub fn session_id(&self) -> SessionId {
+    self.session_id.clone()
+  }
 }
 

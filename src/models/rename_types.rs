@@ -5,7 +5,6 @@ use std::path::PathBuf;
 use super::movie::MovieSession;
 use super::tv_series::TVSeriesSession;
 use super::SessionId;
-use super::Session;
 use super::EntryType;
 
 #[derive(Debug, Clone)]
@@ -49,115 +48,6 @@ pub struct MovieRenameFile {
   /// Output file and ext - encoded file
   pub mp4_file: String,
 }
-
-pub trait SessionTypeAware {
-  fn session_id(&self) -> SessionId;
-}
-
-pub trait SessionFilesAware {
-  fn files(&self) -> Vec<RenameTypes>;
-}
-
-pub trait EpisodeName {
-  fn episode(&self) -> Option<String>;
-}
-
-pub trait MKVTypeAware {
-  fn mkv_file(&self) -> String;
-  fn mp4_file(&self) -> String;
-  fn mkv_path(&self) -> PathBuf;
-}
-
-
-impl SessionTypeAware for RenameTypes {
-  fn session_id(&self) -> SessionId {
-    match self {
-        RenameTypes::TVSeries(tvseries_rename_file) => tvseries_rename_file.session.clone(),
-        RenameTypes::Movie(movie_rename_file) => movie_rename_file.session.clone(),
-    }
-  }
-}
-
-impl MKVTypeAware for RenameTypes {
-  fn mkv_file(&self) -> String {
-    match self {
-      RenameTypes::TVSeries(tvseries_rename_file) => tvseries_rename_file.mkv_file.to_owned(),
-      RenameTypes::Movie(movie_rename_file) => movie_rename_file.mkv_file.to_owned(),
-    }
-  }
-
-  fn mp4_file(&self) -> String {
-    match self {
-      RenameTypes::TVSeries(tvseries_rename_file) => tvseries_rename_file.mp4_file.to_owned(),
-      RenameTypes::Movie(movie_rename_file) => movie_rename_file.mp4_file.to_owned(),
-    }
-  }
-
-  fn mkv_path(&self) -> PathBuf {
-    match self {
-      RenameTypes::TVSeries(tvseries_rename_file) => tvseries_rename_file.path.clone(),
-      RenameTypes::Movie(movie_rename_file) => movie_rename_file.path.clone(),
-    }
-  }
-}
-
-impl MKVTypeAware for TVSeriesRenameFile {
-    fn mkv_file(&self) -> String {
-      self.mkv_file.clone()
-    }
-
-    fn mp4_file(&self) -> String {
-        self.mp4_file.clone()
-    }
-
-    fn mkv_path(&self) -> PathBuf {
-        self.path.clone()
-    }
-}
-
-impl MKVTypeAware for MovieRenameFile {
-    fn mkv_file(&self) -> String {
-        self.mkv_file.clone()
-    }
-
-    fn mp4_file(&self) -> String {
-        self.mp4_file.clone()
-    }
-
-    fn mkv_path(&self) -> PathBuf {
-        self.path.clone()
-    }
-}
-
-impl EpisodeName for RenameTypes {
-    fn episode(&self) -> Option<String> {
-      match self {
-        RenameTypes::TVSeries(tvseries_rename_file) => Some(tvseries_rename_file.episode.to_string()),
-        RenameTypes::Movie(_) => None,
-      }
-    }
-}
-
-/// Convert from a collection of RenameFile into a Map<SessionId, Session>
-//TODO: Remove
-impl FromIterator<RenameTypes> for HashMap<SessionId, Session> {
-
-  fn from_iter<T: IntoIterator<Item = RenameTypes>>(renames: T) -> Self {
-    let mut hash: HashMap<SessionId, Vec<RenameTypes>> = HashMap::new();
-      for rename in renames {
-        hash
-          .entry(rename.session_id())
-          .and_modify(|v| v.push(rename.clone()))
-          .or_insert(vec![rename]);
-      }
-
-      hash
-        .into_iter()
-        .map(|(k, v)| (k.clone(), Session::new(k, v)))
-        .collect()
-    }
-}
-
 
 /// Convert from a collection of RenameFile into a Map<SessionId, TVSeriesSession>
 impl FromIterator<RenameTypes> for (HashMap<SessionId, TVSeriesSession>, HashMap<SessionId, MovieSession>) {

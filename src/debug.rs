@@ -1,17 +1,14 @@
 use std::collections::HashMap;
 
 use console::style;
-
-use crate::models::LocationAware;
 use crate::models::EncodeDirType;
-use crate::models::EncodeDirPathAware;
 use crate::models::EntryType;
-use crate::models::EpisodeName;
-use crate::models::MKVTypeAware;
-use crate::models::Session;
+// use crate::models::EpisodeName;
+// use crate::models::MKVTypeAware;
+// use crate::models::Session;
 use crate::models::SessionId;
 use crate::models::SessionToEncodeDir;
-use crate::models::SessionTypeAware;
+// use crate::models::SessionTypeAware;
 use crate::colours::*;
 
 // See: https://askubuntu.com/questions/821157/print-a-256-color-test-pattern-in-the-terminal
@@ -72,7 +69,7 @@ pub fn dump_unmatched_entry_types(entry_types: &[EntryType], verbose: bool) {
 
 }
 
-pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: bool) {
+// pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: bool) {
   // if verbose {
   //   println!("{}", style("-- Sessions Hash --").bg(BLUE));
   //   for (si, sess) in session_hash {
@@ -95,7 +92,7 @@ pub fn dump_sessions_hash(session_hash: &HashMap<SessionId, Session>, verbose: b
   //     }
   //   }
   // }
-}
+// }
 
 pub fn dump_encodes_hash(encode_dir_hash: &HashMap<SessionId, EncodeDirType>, verbose: bool) {
   // if verbose {
@@ -147,11 +144,11 @@ pub fn dump_sessions_to_encode_dirs(session_to_encode_dirs: &[SessionToEncodeDir
   // }
 }
 
-pub fn dump_unmapped_sessions_and_encode_dirs(
-    sessions_to_encode_dir: &[SessionToEncodeDir],
-    sessions_hash: &HashMap<SessionId, Session>,
-    encode_dir_hash: &HashMap<SessionId, EncodeDirType>,
-    verbose: bool) {
+// pub fn dump_unmapped_sessions_and_encode_dirs(
+//     sessions_to_encode_dir: &[SessionToEncodeDir],
+//     sessions_hash: &HashMap<SessionId, Session>,
+//     encode_dir_hash: &HashMap<SessionId, EncodeDirType>,
+//     verbose: bool) {
 
   // if verbose {
   //   let mapped_session_ids: Vec<SessionId> =
@@ -206,4 +203,4 @@ pub fn dump_unmapped_sessions_and_encode_dirs(
   //       }
   //     }
   // }
-}
+// }

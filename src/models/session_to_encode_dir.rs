@@ -1,21 +1,15 @@
 use std::collections::HashMap;
 
 use super::EncodeDirPathAware;
-use super::EncodeDirType;
 use super::InputFile;
 use super::LocationAware;
-use super::MKVTypeAware;
-use super::RenameTypes;
 use super::SessionId;
-use super::Session;
 use super::TVSeriesEncodeDir;
 use super::MovieEncodeDir;
 use super::tv_series::TVSeriesToEncodeDir;
 use super::tv_series::TVSeriesSession;
 use super::movie::MovieToEncodeDir;
 use super::movie::MovieSession;
-use super::SessionTypeAware;
-
 
 #[derive(Debug, Clone)]
 pub enum SessionToEncodeDir {
@@ -110,16 +104,15 @@ impl SessionToEncodeDir {
 
     result
   }
-}
 
-impl SessionTypeAware for SessionToEncodeDir {
-  fn session_id(&self) -> SessionId {
+  pub fn session_id(&self) -> SessionId {
     match self {
         SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.session_id(),
         SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.session_id(),
     }
   }
 }
+
 
 impl LocationAware for SessionToEncodeDir {
     fn location(&self) -> String {

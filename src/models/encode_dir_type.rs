@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use super::SessionId;
 use super::MovieName;
 use super::EntryType;
-use super::SessionTypeAware;
 
 #[derive(Debug, Clone)]
 pub enum EncodeDirType {
@@ -108,25 +107,6 @@ impl FromIterator<EncodeDirType> for (HashMap<SessionId, TVSeriesEncodeDir>, Has
       (tv_encodes_hash, movie_encodes_hash)
     }
 }
-
-impl SessionTypeAware for EncodeDirType {
-    fn session_id(&self) -> SessionId {
-      match self {
-        EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.session_id.clone(),
-        EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.session_id.clone(),
-      }
-    }
-}
-
-impl EncodeDirPathAware for EncodeDirType {
-    fn encode_dir_path(&self) -> PathBuf {
-        match self {
-            EncodeDirType::TVSeries(tvseries_encode_dir) => tvseries_encode_dir.path.clone(),
-            EncodeDirType::Movie(movie_encode_dir) => movie_encode_dir.path.clone(),
-        }
-    }
-}
-
 
 impl LocationAware for EncodeDirType {
     fn location(&self) -> String {

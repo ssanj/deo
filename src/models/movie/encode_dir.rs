@@ -1,5 +1,3 @@
-use crate::models::SessionTypeAware;
-
 use super::SessionId;
 use super::MovieSession;
 use super::MovieEncodeDir;
@@ -27,12 +25,8 @@ impl MovieToEncodeDir {
   pub fn encode_dir(&self) -> MovieEncodeDir {
     self.encode_dir.clone()
   }
-}
 
-
-impl SessionTypeAware for MovieToEncodeDir {
-    fn session_id(&self) -> SessionId {
-      self.session_id.clone()
-    }
-
+  pub fn session_id(&self) -> SessionId {
+    self.session_id.clone()
+  }
 }

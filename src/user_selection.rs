@@ -4,7 +4,6 @@ use console::style;
 
 use crate::models::EncodeDirPathAware;
 use crate::models::LocationAware;
-use crate::models::MKVTypeAware;
 use crate::profiles::ProfileConfigItem;
 use crate::models::SessionId;
 use crate::models::SessionToEncodeDir;
