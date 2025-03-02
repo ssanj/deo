@@ -52,7 +52,6 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 
   dump_unmatched_entry_types(&all_entry_types, verbose);
 
-
   let (tv_series_session, movies_session) =
       entry_types
         .iter()
@@ -62,9 +61,9 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
           })
         .collect();
 
-// TODO: check for session_ids with both tv series and movies. That shouldn't be allowed.
-// TODO: dump_sessions_hash(&sessions_hash, verbose);
-
+  // TODO: check for session_ids with both tv series and movies. That shouldn't be allowed.
+  dump_tv_sessions_hash(&tv_series_session, verbose);
+  dump_movie_sessions_hash(&movies_session, verbose);
 
   let (tv_series_encode_dir, movie_encode_dir) =
       entry_types
@@ -75,9 +74,9 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
         })
       .collect();
 
-  // TODO: dump these values
+  dump_tv_series_encodes_hash(&tv_series_encode_dir, verbose);
+  dump_movie_encodes_hash(&movie_encode_dir, verbose);
 
-  // TODO: Given a HashMap<SessionId, TVSeriesSession>  and a HashMap<SessionId, TVSeriesEncodeDir>
   let tv_series_session_to_encode_dir = SessionToEncodeDir::from_tvseries_elements(tv_series_session, tv_series_encode_dir);
   let movie_session_to_encode_dir = SessionToEncodeDir::from_movie_elements(movies_session, movie_encode_dir);
   // TODO: return a Vec<TVSeriesToEncodeDir> mapping and maybe a Vec of unmatched entries

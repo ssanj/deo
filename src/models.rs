@@ -10,6 +10,10 @@ mod input_file;
 
 pub use session_id::SessionId as SessionId;
 pub use movie_name::MovieName as MovieName;
+pub use tv_series::TVSeriesSession as TVSeriesSession;
+pub use tv_series::TVSeriesToEncodeDir as TVSeriesToEncodeDir;
+pub use movie::MovieToEncodeDir as MovieToEncodeDir;
+pub use movie::MovieSession as MovieSession;
 pub use rename_types::RenameTypes as RenameTypes;
 pub use rename_types::TVSeriesRenameFile as TVSeriesRenameFile;
 pub use rename_types::MovieRenameFile as MovieRenameFile;

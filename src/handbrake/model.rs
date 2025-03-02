@@ -19,7 +19,6 @@ impl From<UserSelection> for HandbrakeInfo {
       let encode_dir_path = user_selection.encode_dir_path();
       let profile = user_selection.profile().clone();
 
-
       Self {
         input_files,
         profile,
