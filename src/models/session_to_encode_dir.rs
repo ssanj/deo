@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use super::EncodeDirPathAware;
 use super::InputFile;
 use super::SessionId;
 use super::TVSeriesEncodeDir;
@@ -117,14 +116,11 @@ impl SessionToEncodeDir {
       SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().movie_name.name(),
     }
   }
-}
 
-
-impl EncodeDirPathAware for SessionToEncodeDir {
-    fn encode_dir_path(&self) -> std::path::PathBuf {
-      match self {
-        SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.encode_dir().path,
-        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().path,
-      }
+  pub fn encode_dir_path(&self) -> std::path::PathBuf {
+    match self {
+      SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.encode_dir().path,
+      SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().path,
     }
+  }
 }

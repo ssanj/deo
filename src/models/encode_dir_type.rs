@@ -11,11 +11,6 @@ pub enum EncodeDirType {
   Movie(MovieEncodeDir),
 }
 
-pub trait EncodeDirPathAware {
-  fn encode_dir_path(&self) -> PathBuf;
-}
-
-
 #[derive(Debug, Clone)]
 pub struct TVSeriesEncodeDir {
   pub path: PathBuf,

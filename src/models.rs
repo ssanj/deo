@@ -15,7 +15,6 @@ pub use rename_types::TVSeriesRenameFile as TVSeriesRenameFile;
 pub use rename_types::MovieRenameFile as MovieRenameFile;
 pub use entry_type::EntryType as EntryType;
 pub use encode_dir_type::EncodeDirType as EncodeDirType;
-pub use encode_dir_type::EncodeDirPathAware as EncodeDirPathAware;
 pub use encode_dir_type::TVSeriesEncodeDir as TVSeriesEncodeDir;
 pub use encode_dir_type::MovieEncodeDir as MovieEncodeDir;
 pub use session_to_encode_dir::SessionToEncodeDir as SessionToEncodeDir;
