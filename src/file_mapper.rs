@@ -1,7 +1,7 @@
 use std::path::Path;
 use walkdir::WalkDir;
 use regex::Regex;
-use crate::{debug::*};
+use crate::debug::*;
 use std::sync::LazyLock;
 use crate::models::SessionToEncodeDir;
 use crate::models::RenameTypes;
@@ -49,7 +49,6 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
     .collect();
 
   dump_entry_types(&entry_types, verbose);
-
   dump_unmatched_entry_types(&all_entry_types, verbose);
 
   let (tv_series_session, movies_session) =
@@ -77,9 +76,15 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   dump_tv_series_encodes_hash(&tv_series_encode_dir, verbose);
   dump_movie_encodes_hash(&movie_encode_dir, verbose);
 
-  let tv_series_session_to_encode_dir = SessionToEncodeDir::from_tvseries_elements(tv_series_session, tv_series_encode_dir);
-  let movie_session_to_encode_dir = SessionToEncodeDir::from_movie_elements(movies_session, movie_encode_dir);
-  // TODO: return a Vec<TVSeriesToEncodeDir> mapping and maybe a Vec of unmatched entries
+  let tv_series_session_to_encode_dir = SessionToEncodeDir::from_tvseries_elements(&tv_series_session, &tv_series_encode_dir);
+  let movie_session_to_encode_dir = SessionToEncodeDir::from_movie_elements(&movies_session, &movie_encode_dir);
+
+  dump_unmapped_tv_series_sessions_and_encode_dirs(
+    &tv_series_session_to_encode_dir,
+    &tv_series_session,
+    &tv_series_encode_dir,
+    verbose
+  );
 
   let sessions_to_encode_dir: Vec<SessionToEncodeDir> =
     tv_series_session_to_encode_dir
@@ -90,6 +95,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
 
   // dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
+
 
   sessions_to_encode_dir
 }

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use console::style;
-use crate::models::EncodeDirType;
 use crate::models::EntryType;
 use crate::models::MovieEncodeDir;
 use crate::models::MovieSession;
@@ -202,6 +201,58 @@ fn dump_movie_to_encode_dirs(sted: &MovieToEncodeDir) {
     println!("{}", session_msg);
     println!();
   }
+}
+
+pub fn dump_unmapped_tv_series_sessions_and_encode_dirs(tv_series_session_to_encode_dir: &[SessionToEncodeDir], tv_series_session: &HashMap<SessionId, TVSeriesSession>, tv_series_encode_dir: &HashMap<SessionId, TVSeriesEncodeDir>, verbose: bool) {
+    if verbose {
+      let mapped_session_ids: Vec<SessionId> =
+        tv_series_session_to_encode_dir
+          .into_iter()
+          .map(|sed| sed.session_id().clone())
+          .collect();
+
+      let mut has_unmapped_sessions = false;
+      for (session_id, session) in tv_series_session {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_sessions {
+            has_unmapped_sessions = true;
+            let msg = style("-- Unmapped TV Series Sessions --").bg(ORANGE);
+            println!("{}", msg);
+          }
+
+          for file in session.files() {
+            let pathbuf = file.path;
+            let path = pathbuf.to_string_lossy();
+            let episode = &file.episode;
+            let mkv_file = file.mkv_file;
+            let mp4_file = file.mp4_file;
+            let session_session_id = file.session;
+
+            let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n    episode:{episode}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            println!("{}", session_msg);
+            println!();
+          }
+        }
+      }
+
+      let mut has_unmapped_encodes = false;
+      for (session_id, encodes) in tv_series_encode_dir {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_encodes {
+            has_unmapped_encodes = true;
+            let msg = style("-- Unmapped TV Series Encodes --").bg(ORANGE);
+            println!("{}", msg);
+          }
+
+          let encodes_session_id = &encodes.session_id;
+          let path = &encodes.path;
+          let encodes_path = path.to_string_lossy();
+          let season = &encodes.season;
+          let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    season:{season}")).bg(GRAY);
+          println!("{}", encodes_msg);
+        }
+      }
+    }
 }
 
 
