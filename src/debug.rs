@@ -255,64 +255,53 @@ pub fn dump_unmapped_tv_series_sessions_and_encode_dirs(tv_series_session_to_enc
     }
 }
 
+pub(crate) fn dump_unmapped_movie_sessions_and_encode_dirs(movie_session_to_encode_dir: &[SessionToEncodeDir], movies_session: &HashMap<SessionId, MovieSession>, movie_encode_dir: &HashMap<SessionId, MovieEncodeDir>, verbose: bool) {
+    if verbose {
+      let mapped_session_ids: Vec<SessionId> =
+        movie_session_to_encode_dir
+          .into_iter()
+          .map(|sed| sed.session_id().clone())
+          .collect();
 
-// pub fn dump_unmapped_sessions_and_encode_dirs(
-//     sessions_to_encode_dir: &[SessionToEncodeDir],
-//     sessions_hash: &HashMap<SessionId, Session>,
-//     encode_dir_hash: &HashMap<SessionId, EncodeDirType>,
-//     verbose: bool) {
+      let mut has_unmapped_sessions = false;
+      for (session_id, session) in movies_session {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_sessions {
+            has_unmapped_sessions = true;
+            let msg = style("-- Unmapped Movie Sessions --").bg(ORANGE);
+            println!("{}", msg);
+          }
 
-  // if verbose {
-  //   let mapped_session_ids: Vec<SessionId> =
-  //     sessions_to_encode_dir
-  //       .iter()
-  //       .map(|sed| sed.session_id().clone())
-  //       .collect();
+          for file in session.files() {
+            let pathbuf = file.path;
+            let path = pathbuf.to_string_lossy();
+            let mkv_file = file.mkv_file;
+            let mp4_file = file.mp4_file;
+            let session_session_id = file.session;
 
-  //     let mut has_unmapped_sessions = false;
-  //     for (session_id, session) in sessions_hash {
-  //       if !mapped_session_ids.contains(session_id) {
-  //         if !has_unmapped_sessions {
-  //           has_unmapped_sessions = true;
-  //           let msg = style("-- Unmapped sessions --").bg(ORANGE);
-  //           println!("{}", msg);
-  //         }
+            let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            println!("{}", session_msg);
+            println!();
+          }
+        }
+      }
 
-  //         for file in session.files() {
-  //           let pathbuf = file.mkv_path();
-  //           let path = pathbuf.to_string_lossy();
-  //           let episode = &file.episode();
-  //           let episode_str = match episode {
-  //               Some(e) => format!("    episode:{e}\n"),
-  //               None => "".to_string(),
-  //           };
-  //           let mkv_file = file.mkv_file();
-  //           let mp4_file = file.mp4_file();
-  //           let session_session_id = file.session_id();
+      let mut has_unmapped_encodes = false;
+      for (session_id, encodes) in movie_encode_dir {
+        if !mapped_session_ids.contains(session_id) {
+          if !has_unmapped_encodes {
+            has_unmapped_encodes = true;
+            let msg = style("-- Unmapped Movie Encodes --").bg(ORANGE);
+            println!("{}", msg);
+          }
 
-  //           let session_msg = style(format!("\n  Session:\n    session:{session_session_id}\n    path:{path}\n{episode_str}    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
-  //           println!("{}", session_msg);
-  //           println!();
-  //         }
-  //       }
-  //     }
-
-  //     let mut has_unmapped_encodes = false;
-  //     for (session_id, encodes) in encode_dir_hash {
-  //       if !mapped_session_ids.contains(session_id) {
-  //         if !has_unmapped_encodes {
-  //           has_unmapped_encodes = true;
-  //           let msg = style("-- Unmapped encodes --").bg(ORANGE);
-  //           println!("{}", msg);
-  //         }
-
-  //         let encodes_session_id = encodes.session_id();
-  //         let path = encodes.path();
-  //         let encodes_path = &path.to_string_lossy();
-  //         let location = encodes.location();
-  //         let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n    {location}")).bg(GRAY);
-  //         println!("{}", encodes_msg);
-  //       }
-  //     }
-  // }
-// }
+          let encodes_session_id = &encodes.session_id;
+          let path = &encodes.path;
+          let encodes_path = path.to_string_lossy();
+          let movie_name = &encodes.movie_name;
+          let encodes_msg = style(format!("\n  Encodes:\n    session:{encodes_session_id}\n    {encodes_path}\n     movie_name:{movie_name}")).bg(GRAY);
+          println!("{}", encodes_msg);
+        }
+      }
+    }
+}

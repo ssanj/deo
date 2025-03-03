@@ -86,6 +86,13 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
     verbose
   );
 
+  dump_unmapped_movie_sessions_and_encode_dirs(
+    &movie_session_to_encode_dir,
+    &movies_session,
+    &movie_encode_dir,
+    verbose
+  );
+
   let sessions_to_encode_dir: Vec<SessionToEncodeDir> =
     tv_series_session_to_encode_dir
       .into_iter()
@@ -93,9 +100,6 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
       .collect();
 
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
-
-  // dump_unmapped_sessions_and_encode_dirs(&sessions_to_encode_dir, &sessions_hash, &encode_dir_hash, verbose);
-
 
   sessions_to_encode_dir
 }
