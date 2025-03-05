@@ -60,7 +60,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
           })
         .collect();
 
-  // TODO: check for session_ids with both tv series and movies. That shouldn't be allowed.
+  dump_mixed_sessions(&tv_series_session, &movies_session, verbose);
   dump_tv_sessions_hash(&tv_series_session, verbose);
   dump_movie_sessions_hash(&movies_session, verbose);
 
@@ -105,57 +105,64 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
 }
 
 
-// TODO: Make all these regexes safe - don't panic with unwrap
 fn handle_tv_series_rename(path: &Path) -> Option<EntryType> {
-    if let Some((_, [session, file, episode, _])) = RENAME_TV_SERIES_FILE_REG.captures(path.to_str().unwrap()).map(|c| c.extract()) {
-      Some(EntryType::new_tv_series_rename(path, session, episode, file))
-    } else {
-      None
-    }
+    path
+      .to_str()
+      .and_then(|path| RENAME_TV_SERIES_FILE_REG.captures(path))
+      .map(|c| c.extract())
+      .map(|(_, [session, file, episode, _])| {
+        EntryType::new_tv_series_rename(path, session, episode, file)
+      })
 }
 
 fn handle_movie_rename(path: &Path) -> Option<EntryType> {
-    if let Some((_, [session, file])) = RENAME_MOVIE_FILE_REG.captures(path.to_str().unwrap()).map(|c| c.extract()) {
-      Some(EntryType::new_movie_rename::<_>(path, session, file))
-    } else {
-      None
-    }
+  path
+    .to_str()
+    .and_then(|path| RENAME_MOVIE_FILE_REG.captures(path))
+    .map(|c| c.extract())
+    .map(|(_, [session, file])| {
+      EntryType::new_movie_rename::<_>(path, session, file)
+    })
 }
 
 fn handle_encode_file(path: &Path) -> Option<EntryType> {
-    if let Some((_, [session])) = ENCODE_FILE_REG.captures(path.to_str().unwrap()).map(|c| c.extract()) {
-      std::fs::read_to_string(path)
-        .ok()
-        .map(|encode_file_contents| encode_file_contents.trim().to_owned()) // remove newline added by read_to_string
-        .and_then(|encode_file_contents| {
-          let encode_dir = Path::new(&encode_file_contents);
-          if encode_dir.is_dir() && ENCODE_TV_SERIES_DIR_REG.is_match(&encode_file_contents) {
-            handle_tv_series_encode_file(&encode_file_contents, session)
-          } else if encode_dir.is_dir() && ENCODE_MOVIE_DIR_REG.is_match(&encode_file_contents) {
-            handle_movie_encode_file(&encode_file_contents, session)
-          } else {
-            Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
-          }
-        })
-    } else {
-      None
-    }
+    path
+      .to_str()
+      .and_then(|path| ENCODE_FILE_REG.captures(path))
+      .map(|c| c.extract())
+      .and_then(|(_, [session])| {
+        std::fs::read_to_string(path)
+          .ok()
+          .map(|encode_file_contents| encode_file_contents.trim().to_owned()) // remove newline added by read_to_string
+          .and_then(|encode_file_contents| {
+            let encode_dir = Path::new(&encode_file_contents);
+            if encode_dir.is_dir() && ENCODE_TV_SERIES_DIR_REG.is_match(&encode_file_contents) {
+              handle_tv_series_encode_file(&encode_file_contents, session)
+            } else if encode_dir.is_dir() && ENCODE_MOVIE_DIR_REG.is_match(&encode_file_contents) {
+              handle_movie_encode_file(&encode_file_contents, session)
+            } else {
+              Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
+            }
+          })
+      })
 }
 
 fn handle_movie_encode_file(contents: &str, session: &str) -> Option<EntryType> {
-    if let Some((_, [movie_name])) = ENCODE_MOVIE_DIR_REG.captures(contents).map(|c| c.extract()) {
-      Some(EntryType::new_movie_encodes(contents, movie_name, session))
-    } else {
-      None
-    }
+  ENCODE_MOVIE_DIR_REG
+    .captures(contents)
+    .map(|c| c.extract())
+    .map(|(_, [movie_name])| {
+      EntryType::new_movie_encodes(contents, movie_name, session)
+    })
 }
 
 fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryType> {
-  if let Some((_, [season])) = ENCODE_TV_SERIES_DIR_REG.captures(contents).map(|c| c.extract()) {
-    Some(EntryType::new_tv_series_encodes(contents, season, session))
-  } else {
-    None
-  }
+  ENCODE_TV_SERIES_DIR_REG
+    .captures(contents)
+    .map(|c| c.extract())
+    .map(|(_, [season])| {
+      EntryType::new_tv_series_encodes(contents, season, session)
+    })
 }
 
 #[cfg(test)]

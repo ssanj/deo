@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use super::SessionId;
 use super::MovieName;
 
-// TODO: Extend EntryType to have one rename for tv series and one for movies
 // This class models something that can be encoded later.
 #[derive(Debug, Clone)]
 pub enum EntryType {

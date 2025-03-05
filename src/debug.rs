@@ -305,3 +305,33 @@ pub(crate) fn dump_unmapped_movie_sessions_and_encode_dirs(movie_session_to_enco
       }
     }
 }
+
+pub fn dump_mixed_sessions(tv_series_session: &HashMap<SessionId, TVSeriesSession>, movies_session: &HashMap<SessionId, MovieSession>, verbose: bool) {
+
+    if verbose {
+      for (session_id, tv_series_session) in tv_series_session {
+        if let Some(movie_session) = movies_session.get(session_id) {
+          let msg = style("-- Mixed TV Series and Movie Sessions --").bg(ORANGE);
+          println!("{}", msg);
+
+          for tv_series_file in tv_series_session.files() {
+            let path = &tv_series_file.path.to_string_lossy();
+            let episode = tv_series_file.episode;
+            let mkv_file = tv_series_file.mkv_file;
+            let mp4_file = tv_series_file.mp4_file;
+            let tv_session_msg = style(format!("\n  TV Series Session:\n    session:{session_id}\n    path:{path}\n{episode}    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+          }
+
+          for movie_file in movie_session.files() {
+            let path = &movie_file.path.to_string_lossy();
+            let mkv_file = movie_file.mkv_file;
+            let mp4_file = movie_file.mp4_file;
+
+            let movie_session_msg = style(format!("\n  Movie Session:\n    session:{session_id}\n    path:{path}\n    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            println!("{}", movie_session_msg);
+            println!();
+          }
+      }
+    }
+  }
+}
