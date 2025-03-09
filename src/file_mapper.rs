@@ -167,9 +167,7 @@ fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryTy
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
-    use crate::models::{SessionId, TVSeriesEncodeDir, TVSeriesRenameFile, TVSeriesSession};
+    use crate::models::{MovieEncodeDir, MovieName, MovieRenameFile, MovieSession, SessionId, TVSeriesEncodeDir, TVSeriesRenameFile, TVSeriesSession};
 
     use super::*;
     use pretty_assertions::assert_eq;
@@ -271,7 +269,7 @@ mod tests {
 
       let tv_series_encode_dir =
         TVSeriesEncodeDir {
-          path: "/Users/sanj/ziptemp/mkv-samples/Encodes/ThunderCats {tvdb-70355}/Season 01".into(),
+          path: "data/tv_series/Encodes/ThunderCats {tvdb-70355}/Season 01".into(),
           season: "ThunderCats {tvdb-70355}/Season 01".into(),
           session_id: session_id.clone(),
         };
@@ -288,7 +286,48 @@ mod tests {
         ];
 
       assert_eq!(session_to_encode_dirs, expected)
-      // assert_eq!(session_to_encode_dirs.len(), 1, "session_to_encode_dirs is empty")
+    }
+
+    #[test]
+    fn gets_movie_to_encode() {
+      let test_path = get_source_directory("movie");
+      let session_to_encode_dirs: Vec<SessionToEncodeDir> =
+        get_session_encode_mapping(&test_path, true)
+          .into_iter()
+          .map(|v| v.sorted_files())
+          .collect();
+
+      let session_id = SessionId::new("session5");
+
+      let movie_rename_files =
+        vec![
+          MovieRenameFile {
+            path: format!("{}/Rips/session5/renames/Star Wars - {{tvdb-71}}.mkv", &test_path).into(),
+            session: session_id.clone(),
+            mkv_file: "Star Wars - {tvdb-71}.mkv".to_string(),
+            mp4_file: "Star Wars - {tvdb-71}.mp4".to_string(),
+          }
+        ];
+
+      let movie_encode_dir =
+        MovieEncodeDir {
+          path: "data/movie/Encodes/Star Wars - {tvdb-71}".into(),
+          session_id: session_id.clone(),
+          movie_name: MovieName::new("Star Wars - {tvdb-71}")
+        };
+
+
+      let movie_session =
+        MovieSession::new(session_id.clone(), movie_rename_files);
+
+      let expected =
+        vec![
+          SessionToEncodeDir::new_movie_encode_dir(
+            session_id.clone(), movie_session, movie_encode_dir
+          )
+        ];
+
+      assert_eq!(session_to_encode_dirs, expected)
     }
 
     fn get_source_directory(test_directory: &str) -> String {

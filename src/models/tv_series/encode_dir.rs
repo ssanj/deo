@@ -22,6 +22,7 @@ impl TVSeriesToEncodeDir {
     self.session.clone()
   }
 
+  #[cfg(test)]
   pub fn sorted_session(&self) -> TVSeriesSession {
     TVSeriesSession::new(self.session_id.clone(), self.session.clone().files_sorted())
   }

@@ -18,4 +18,11 @@ impl MovieSession {
   pub fn files(&self) -> Vec<MovieRenameFile> {
     self.files.clone()
   }
+
+  #[cfg(test)]
+  pub fn sorted_files(&self) -> Vec<MovieRenameFile> {
+    let mut sorted = self.files.clone();
+    sorted.sort_by(|a, b| a.mkv_file.cmp(&b.mkv_file));
+    sorted
+  }
 }

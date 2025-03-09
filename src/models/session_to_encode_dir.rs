@@ -124,6 +124,7 @@ impl SessionToEncodeDir {
     }
   }
 
+  #[cfg(test)]
   pub fn sorted_files(&self) -> Self {
     match self {
         SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => {
@@ -135,7 +136,15 @@ impl SessionToEncodeDir {
             )
           )
         },
-        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => todo!(),
+        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => {
+          SessionToEncodeDir::MovieMapping(
+            MovieToEncodeDir::new(
+              movie_to_encode_dir.session_id(),
+              movie_to_encode_dir.sorted_session(),
+              movie_to_encode_dir.encode_dir()
+            )
+          )
+        },
     }
   }
 }

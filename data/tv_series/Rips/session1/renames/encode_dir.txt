@@ -1,1 +1,1 @@
-/Users/sanj/ziptemp/mkv-samples/Encodes/ThunderCats {tvdb-70355}/Season 01
+data/tv_series/Encodes/ThunderCats {tvdb-70355}/Season 01
