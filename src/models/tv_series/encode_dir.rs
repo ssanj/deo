@@ -2,7 +2,7 @@ use super::SessionId;
 use super::TVSeriesSession;
 use super::TVSeriesEncodeDir;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TVSeriesToEncodeDir {
   session_id: SessionId,
   session: TVSeriesSession,
@@ -20,6 +20,10 @@ impl TVSeriesToEncodeDir {
 
   pub fn session(&self) -> TVSeriesSession {
     self.session.clone()
+  }
+
+  pub fn sorted_session(&self) -> TVSeriesSession {
+    TVSeriesSession::new(self.session_id.clone(), self.session.clone().files_sorted())
   }
 
   pub fn encode_dir(&self) -> TVSeriesEncodeDir {

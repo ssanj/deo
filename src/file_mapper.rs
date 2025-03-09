@@ -167,6 +167,10 @@ fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryTy
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
+    use crate::models::{SessionId, TVSeriesEncodeDir, TVSeriesRenameFile, TVSeriesSession};
+
     use super::*;
     use pretty_assertions::assert_eq;
 
@@ -223,5 +227,77 @@ mod tests {
 
       assert_eq!(considered_str, "/Some/Path/Encodes/Return of the Jedi - {tvdb-698}");
       assert_eq!(encodes_dir, "Return of the Jedi - {tvdb-698}");
+    }
+
+    // ----------------------------------------------------------------------------------------
+    // Partial integration test - tests the get_session_encode_mapping using the filesystem.
+    // ----------------------------------------------------------------------------------------
+
+    #[test]
+    fn gets_tv_series_to_encode() {
+      let test_path = get_source_directory("tv_series");
+      let session_to_encode_dirs: Vec<SessionToEncodeDir> =
+        get_session_encode_mapping(&test_path, false)
+          .into_iter()
+          .map(|v| v.sorted_files())
+          .collect();
+
+      let session_id = SessionId::new("session1");
+
+      let tv_series_rename_files =
+        vec![
+          TVSeriesRenameFile {
+            path: format!("{}/Rips/session1/renames/S01E01 - Exodus.mkv", &test_path).into(),
+            session: session_id.clone(),
+            episode: "S01E01".to_string(),
+            mkv_file: "S01E01 - Exodus.mkv".to_string(),
+            mp4_file: "S01E01 - Exodus.mp4".to_string(),
+          },
+          TVSeriesRenameFile {
+            path: format!("{}/Rips/session1/renames/S01E02 - The Unholy Alliance.mkv", &test_path).into(),
+            session: session_id.clone(),
+            episode: "S01E02".to_string(),
+            mkv_file: "S01E02 - The Unholy Alliance.mkv".to_string(),
+            mp4_file: "S01E02 - The Unholy Alliance.mp4".to_string(),
+          },
+          TVSeriesRenameFile {
+            path: format!("{}/Rips/session1/renames/S01E03 - Berbils.mkv", &test_path).into(),
+            session: session_id.clone(),
+            episode: "S01E03".to_string(),
+            mkv_file: "S01E03 - Berbils.mkv".to_string(),
+            mp4_file: "S01E03 - Berbils.mp4".to_string(),
+          },
+        ];
+
+      let tv_series_encode_dir =
+        TVSeriesEncodeDir {
+          path: "/Users/sanj/ziptemp/mkv-samples/Encodes/ThunderCats {tvdb-70355}/Season 01".into(),
+          season: "ThunderCats {tvdb-70355}/Season 01".into(),
+          session_id: session_id.clone(),
+        };
+
+
+      let tv_series_session =
+        TVSeriesSession::new(session_id.clone(), tv_series_rename_files);
+
+      let expected =
+        vec![
+          SessionToEncodeDir::new_tv_series_encode_dir(
+            session_id.clone(), tv_series_session, tv_series_encode_dir
+          )
+        ];
+
+      assert_eq!(session_to_encode_dirs, expected)
+      // assert_eq!(session_to_encode_dirs.len(), 1, "session_to_encode_dirs is empty")
+    }
+
+    fn get_source_directory(test_directory: &str) -> String {
+      let current_directory = std::env::current_dir().expect("Could not get current directory");
+      println!("current directory {}", current_directory.to_string_lossy());
+
+      let source_directory = current_directory.join(format!("data/{}", test_directory));
+      println!("source directory {}", source_directory.to_string_lossy());
+
+      source_directory.to_string_lossy().to_string()
     }
 }

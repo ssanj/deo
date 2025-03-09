@@ -14,7 +14,7 @@ pub enum RenameTypes {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TVSeriesRenameFile {
 
   /// Full path to mkv_file
@@ -33,7 +33,7 @@ pub struct TVSeriesRenameFile {
   pub mp4_file: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MovieRenameFile {
 
   /// Full path to mkv_file

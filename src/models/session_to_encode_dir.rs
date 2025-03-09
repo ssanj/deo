@@ -9,7 +9,7 @@ use super::tv_series::TVSeriesSession;
 use super::movie::MovieToEncodeDir;
 use super::movie::MovieSession;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SessionToEncodeDir {
   TVSeriesMapping(TVSeriesToEncodeDir),
   MovieMapping(MovieToEncodeDir)
@@ -121,6 +121,21 @@ impl SessionToEncodeDir {
     match self {
       SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => tvseries_to_encode_dir.encode_dir().path,
       SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => movie_to_encode_dir.encode_dir().path,
+    }
+  }
+
+  pub fn sorted_files(&self) -> Self {
+    match self {
+        SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) => {
+          SessionToEncodeDir::TVSeriesMapping(
+            TVSeriesToEncodeDir::new(
+              tvseries_to_encode_dir.session_id(),
+              tvseries_to_encode_dir.sorted_session(),
+              tvseries_to_encode_dir.encode_dir()
+            )
+          )
+        },
+        SessionToEncodeDir::MovieMapping(movie_to_encode_dir) => todo!(),
     }
   }
 }

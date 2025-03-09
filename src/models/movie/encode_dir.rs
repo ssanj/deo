@@ -2,7 +2,7 @@ use super::SessionId;
 use super::MovieSession;
 use super::MovieEncodeDir;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MovieToEncodeDir {
   session_id: SessionId,
   session: MovieSession,

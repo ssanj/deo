@@ -11,14 +11,14 @@ pub enum EncodeDirType {
   Movie(MovieEncodeDir),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TVSeriesEncodeDir {
   pub path: PathBuf,
   pub season: String,
   pub session_id: SessionId,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MovieEncodeDir {
   pub path: PathBuf,
   pub session_id: SessionId,

@@ -1,9 +1,7 @@
-use crate::models::session_id;
-
 use super::MovieRenameFile;
 use super::SessionId;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MovieSession {
   session_id: SessionId,
   files: Vec<MovieRenameFile>,
