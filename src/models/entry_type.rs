@@ -42,7 +42,6 @@ pub enum EntryType {
     /// Full path to encode directory
     path: PathBuf,
 
-    // TODO: What does this mean in terms of a movie? Is it the name? Choose a better name for this field
     /// Season
     season: String,
   },
