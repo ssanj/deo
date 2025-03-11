@@ -8,7 +8,7 @@ use crate::models::RenameTypes;
 use crate::models::EntryType;
 use crate::models::EncodeDirType;
 
-static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,})\s-\s(.+.mkv))$").unwrap());
+static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,}(?:-E\d{2,})?)\s-\s(.+.mkv))$").unwrap());
 static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/(.+.mkv)$").unwrap());
 static ENCODE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap());
 static ENCODE_TV_SERIES_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap());
@@ -185,6 +185,18 @@ mod tests {
     }
 
     #[test]
+    fn tv_series_regex_with_multiple_episodes_match() {
+      let path = "/Some/Path/Rips/session1/renames/S01E04-E05 - The Saga.mkv";
+      assert_eq!(RENAME_TV_SERIES_FILE_REG.is_match(path), true);
+
+      let (considered_str, [session, file, episode, _]) = RENAME_TV_SERIES_FILE_REG.captures(path).unwrap().extract();
+      assert_eq!(considered_str, "session1/renames/S01E04-E05 - The Saga.mkv");
+      assert_eq!(session, "session1");
+      assert_eq!(file, "S01E04-E05 - The Saga.mkv");
+      assert_eq!(episode, "S01E04-E05");
+    }
+
+    #[test]
     fn movie_regex_match() {
       let path = "/Some/Path/Rips/session3/renames/Return of the Jedi - {tvdb-698}.mkv";
       assert_eq!(RENAME_MOVIE_FILE_REG.is_match(path), true);
@@ -264,6 +276,13 @@ mod tests {
             episode: "S01E03".to_string(),
             mkv_file: "S01E03 - Berbils.mkv".to_string(),
             mp4_file: "S01E03 - Berbils.mp4".to_string(),
+          },
+          TVSeriesRenameFile {
+            path: format!("{}/Rips/session1/renames/S01E04-E05 - The Saga.mkv", &test_path).into(),
+            session: session_id.clone(),
+            episode: "S01E04-E05".to_string(),
+            mkv_file: "S01E04-E05 - The Saga.mkv".to_string(),
+            mp4_file: "S01E04-E05 - The Saga.mp4".to_string(),
           },
         ];
 
