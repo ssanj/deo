@@ -320,6 +320,8 @@ pub fn dump_mixed_sessions(tv_series_session: &HashMap<SessionId, TVSeriesSessio
             let mkv_file = tv_series_file.mkv_file;
             let mp4_file = tv_series_file.mp4_file;
             let tv_session_msg = style(format!("\n  TV Series Session:\n    session:{session_id}\n    path:{path}\n{episode}    mkv_file:{mkv_file}\n    mp4_file:{mp4_file}")).bg(GRAY);
+            println!("{}", tv_session_msg);
+            println!();
           }
 
           for movie_file in movie_session.files() {

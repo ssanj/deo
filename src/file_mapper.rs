@@ -8,11 +8,11 @@ use crate::models::RenameTypes;
 use crate::models::EntryType;
 use crate::models::EncodeDirType;
 
-static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/((S\d{2,}E\d{2,}(?:-E\d{2,})?)\s-\s(.+.mkv))$").unwrap());
-static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/(.+.mkv)$").unwrap());
-static ENCODE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})\/renames\/encode_dir\.txt$").unwrap());
-static ENCODE_TV_SERIES_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\}\/Season\s\d{2,})$").unwrap());
-static ENCODE_MOVIE_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+\/(.+\s\{tvdb\-\d{1,}\})$").unwrap());
+static RENAME_TV_SERIES_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})/renames/((S\d{2,}E\d{2,}(?:-E\d{2,})?)\s-\s(.+.mkv))$").unwrap());
+static RENAME_MOVIE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})/renames/(.+.mkv)$").unwrap());
+static ENCODE_FILE_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(session\d{1,})/renames/encode_dir\.txt$").unwrap());
+static ENCODE_TV_SERIES_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+/(.+\s\{tvdb\-\d{1,}\}/Season\s\d{2,})$").unwrap());
+static ENCODE_MOVIE_DIR_REG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r".+/(.+\s\{tvdb\-\d{1,}\})$").unwrap());
 
 pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> Vec<SessionToEncodeDir> {
   let all_entry_types: Vec<EntryType> =
