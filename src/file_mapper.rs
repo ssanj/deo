@@ -144,8 +144,9 @@ fn handle_encode_file(path: &Path) -> Option<EntryType> {
               let exists = encode_dir.exists();
               let is_dir = encode_dir.is_dir();
               let is_file = encode_dir.is_file();
+              let encode_dir_file = path.to_string_lossy();
 
-              println!("Error - exists:{}, is_file:{}, is_dir:{}", exists, is_file, is_dir);
+              println!("Encode Dir Error - exists:{}, is_file:{}, is_dir:{}, encode_file_read:{}", exists, is_file, is_dir, encode_dir_file);
 
               Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
             }
