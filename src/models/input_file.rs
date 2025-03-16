@@ -1,7 +1,5 @@
 use crate::models::MovieRenameFile;
 use crate::models::TVSeriesRenameFile;
-use crate::profiles::ProfileConfigItem;
-use crate::user_selection::UserSelection;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone)]

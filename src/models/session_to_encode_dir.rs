@@ -66,7 +66,7 @@ impl SessionToEncodeDir {
   }
 
   pub fn rename_files(&self) -> Vec<InputFile> {
-    let result = match self.clone() {
+    match self.clone() {
         SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) =>
           tvseries_to_encode_dir
             .session()
@@ -81,13 +81,11 @@ impl SessionToEncodeDir {
             .into_iter()
             .map(|movie| movie.into())
             .collect()
-    };
-
-    result
+    }
   }
 
   pub fn file_count(&self) -> u64 {
-    let result = match self.clone() {
+    match self.clone() {
         SessionToEncodeDir::TVSeriesMapping(tvseries_to_encode_dir) =>
           tvseries_to_encode_dir
             .session()
@@ -98,9 +96,7 @@ impl SessionToEncodeDir {
             .session()
             .files()
             .len() as u64
-    };
-
-    result
+    }
   }
 
   pub fn session_id(&self) -> SessionId {

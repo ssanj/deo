@@ -96,7 +96,7 @@ pub fn get_session_encode_mapping<P: AsRef<Path>>(source: P, verbose: bool) -> V
   let sessions_to_encode_dir: Vec<SessionToEncodeDir> =
     tv_series_session_to_encode_dir
       .into_iter()
-      .chain(movie_session_to_encode_dir.into_iter())
+      .chain(movie_session_to_encode_dir)
       .collect();
 
   dump_sessions_to_encode_dirs(&sessions_to_encode_dir, verbose);
@@ -141,13 +141,6 @@ fn handle_encode_file(path: &Path) -> Option<EntryType> {
             } else if encode_dir.is_dir() && ENCODE_MOVIE_DIR_REG.is_match(&encode_file_contents) {
               handle_movie_encode_file(&encode_file_contents, session)
             } else {
-              let exists = encode_dir.exists();
-              let is_dir = encode_dir.is_dir();
-              let is_file = encode_dir.is_file();
-              let encode_dir_file = path.to_string_lossy();
-
-              println!("Encode Dir Error - exists:{}, is_file:{}, is_dir:{}, encode_file_read:{}", exists, is_file, is_dir, encode_dir_file);
-
               Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
             }
           })
@@ -174,7 +167,8 @@ fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryTy
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::File, io::{LineWriter, Write}};
+    use std::fs::File;
+    use std::io::Write;
 
     use crate::models::{MovieEncodeDir, MovieName, MovieRenameFile, MovieSession, SessionId, TVSeriesEncodeDir, TVSeriesRenameFile, TVSeriesSession};
 

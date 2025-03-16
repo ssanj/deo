@@ -207,7 +207,7 @@ pub fn dump_unmapped_tv_series_sessions_and_encode_dirs(tv_series_session_to_enc
     if verbose {
       let mapped_session_ids: Vec<SessionId> =
         tv_series_session_to_encode_dir
-          .into_iter()
+          .iter()
           .map(|sed| sed.session_id().clone())
           .collect();
 
@@ -259,7 +259,7 @@ pub(crate) fn dump_unmapped_movie_sessions_and_encode_dirs(movie_session_to_enco
     if verbose {
       let mapped_session_ids: Vec<SessionId> =
         movie_session_to_encode_dir
-          .into_iter()
+          .iter()
           .map(|sed| sed.session_id().clone())
           .collect();
 
