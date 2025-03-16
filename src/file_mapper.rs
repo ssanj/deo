@@ -141,6 +141,12 @@ fn handle_encode_file(path: &Path) -> Option<EntryType> {
             } else if encode_dir.is_dir() && ENCODE_MOVIE_DIR_REG.is_match(&encode_file_contents) {
               handle_movie_encode_file(&encode_file_contents, session)
             } else {
+              let exists = encode_dir.exists();
+              let is_dir = encode_dir.is_dir();
+              let is_file = encode_dir.is_file();
+
+              println!("Error - exists:{}, is_file:{}, is_dir:{}", exists, is_file, is_dir);
+
               Some(EntryType::could_not_match_defined_encode_dir(&encode_file_contents))  // Not a directory or encode_dir_reg did not match
             }
           })
