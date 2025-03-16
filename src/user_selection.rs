@@ -1,7 +1,10 @@
 use std::fmt;
+use std::path::PathBuf;
 use console::style;
 
-use crate::{entry_type::{EncodeDir, RenameFile, SessionId, SessionToEncodeDir}, profiles::ProfileConfigItem};
+use crate::profiles::ProfileConfigItem;
+use crate::models::SessionId;
+use crate::models::SessionToEncodeDir;
 
 pub struct UserSelection {
   session_id: SessionId,
@@ -18,12 +21,13 @@ impl UserSelection {
     }
   }
 
-  pub fn rename_files(&self) -> Vec<RenameFile> {
-    self.session_to_encode_dir.session().files()
+  pub fn session_to_encode_dir(&self) -> SessionToEncodeDir {
+    self.session_to_encode_dir.clone()
   }
 
-  pub fn encode_dir(&self) -> &EncodeDir {
-    self.session_to_encode_dir.encode_dir()
+
+  pub fn encode_dir_path(&self) -> PathBuf {
+    self.session_to_encode_dir.encode_dir_path()
   }
 
   pub fn profile(&self) -> &ProfileConfigItem {
@@ -34,8 +38,8 @@ impl UserSelection {
 impl fmt::Display for UserSelection {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let UserSelection { session_id, session_to_encode_dir, profile } = self;
-      let season = &session_to_encode_dir.encode_dir().season;
-      write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(season).underlined(), style(profile).blue())
+    let location = &session_to_encode_dir.location();
+    write!(f, "Copy {} -> {} with {}", style(session_id).yellow(), style(location).underlined(), style(profile).blue())
   }
 }
 

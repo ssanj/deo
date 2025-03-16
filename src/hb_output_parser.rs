@@ -5,7 +5,7 @@ pub enum Output {
   Done(u32),
 }
 
-pub fn parse(line: String) -> Output {
+pub fn parse(line: &str) -> Output {
   if line.starts_with("        \"Progress\":") {
     let pieces: Vec<_> = line.split(':').collect();
     let progress_str = pieces.get(1).map(|v| v.to_string()).take().unwrap_or_else(|| format!("Expected 2 tokens but got: {:?}", pieces));

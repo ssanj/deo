@@ -3,7 +3,7 @@ use console::style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::profiles::{ProfileConfig, ProfileSelection};
 use crate::user_selection::{ContinueType, UserSelection};
-use crate::entry_type::SessionToEncodeDir;
+use crate::models::SessionToEncodeDir;
 
 #[allow(clippy::enum_variant_names)]
 pub enum Interaction {
@@ -57,9 +57,10 @@ fn get_user_selection(sessions_to_encode_dir: Vec<SessionToEncodeDir>, profiles:
 
   println!();
   for sed in sessions_to_encode_dir {
-    let files = sed.session().files();
+    let files = sed.rename_files();
     let num = files.len();
-    println!("{} ({}) has the following {} files:", style(&sed.encode_dir().season).underlined(), style(sed.session_id().id()).yellow().bold(), num);
+    let location = &sed.location();
+    println!("{} ({}) has the following {} files:", style(location).underlined(), style(sed.session_id().id()).yellow().bold(), num);
     for file in files {
       println!(" - {}", file.mkv_file);
     }

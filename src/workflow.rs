@@ -20,7 +20,7 @@ fn encode_profiles(args: Args, profile_config: ProfileConfig) {
   } else {
     match user_choices::interact_with_user(sessions_to_encode_dir, profile_config) {
       user_choices::Interaction::ProceedToEncode(selections) => {
-        match handbrake::encode(selections) {
+        match handbrake::encoder_with_handbrake(selections) {
           Ok(_) => (),
           Err(error) => eprintln!("{}", style(error).bg(colours::RED)),
         }
