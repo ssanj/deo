@@ -261,7 +261,7 @@ mod tests {
       create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session1/renames");
 
       let session_to_encode_dirs: Vec<SessionToEncodeDir> =
-        get_session_encode_mapping(&test_path, false)
+        get_session_encode_mapping(&test_path, true)
           .into_iter()
           .map(|v| v.sorted_files())
           .collect();
