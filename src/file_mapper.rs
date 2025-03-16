@@ -248,15 +248,16 @@ mod tests {
     #[test]
     fn gets_tv_series_to_encode() {
       let test_path = get_source_directory("tv_series");
+
+      let encode_dir_content_path = "Encodes/ThunderCats {tvdb-70355}/Season 01";
+
+      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session1/renames");
+
       let session_to_encode_dirs: Vec<SessionToEncodeDir> =
         get_session_encode_mapping(&test_path, false)
           .into_iter()
           .map(|v| v.sorted_files())
           .collect();
-
-      let encode_dir_content_path = "Encodes/ThunderCats {tvdb-70355}/Season 01";
-
-      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session1/renames");
 
       let session_id = SessionId::new("session1");
 
@@ -324,15 +325,14 @@ mod tests {
     #[test]
     fn gets_movie_to_encode() {
       let test_path = get_source_directory("movie");
+      let encode_dir_content_path = "Encodes/Star Wars - {tvdb-71}";
+      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session5/renames");
+
       let session_to_encode_dirs: Vec<SessionToEncodeDir> =
         get_session_encode_mapping(&test_path, true)
           .into_iter()
           .map(|v| v.sorted_files())
           .collect();
-
-      let encode_dir_content_path = "Encodes/Star Wars - {tvdb-71}";
-
-      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session5/renames");
 
       let session_id = SessionId::new("session5");
 
