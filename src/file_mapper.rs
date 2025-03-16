@@ -167,6 +167,8 @@ fn handle_tv_series_encode_file(contents: &str, session: &str) -> Option<EntryTy
 
 #[cfg(test)]
 mod tests {
+    use std::{fs::File, io::{LineWriter, Write}};
+
     use crate::models::{MovieEncodeDir, MovieName, MovieRenameFile, MovieSession, SessionId, TVSeriesEncodeDir, TVSeriesRenameFile, TVSeriesSession};
 
     use super::*;
@@ -252,6 +254,10 @@ mod tests {
           .map(|v| v.sorted_files())
           .collect();
 
+      let encode_dir_content_path = "Encodes/ThunderCats {tvdb-70355}/Season 01";
+
+      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session1/renames");
+
       let session_id = SessionId::new("session1");
 
       let tv_series_rename_files =
@@ -288,7 +294,7 @@ mod tests {
 
       let tv_series_encode_dir =
         TVSeriesEncodeDir {
-          path: "data/tv_series/Encodes/ThunderCats {tvdb-70355}/Season 01".into(),
+          path: format!("{}/{}", &test_path, encode_dir_content_path).into(),
           season: "ThunderCats {tvdb-70355}/Season 01".into(),
           session_id: session_id.clone(),
         };
@@ -307,6 +313,14 @@ mod tests {
       assert_eq!(session_to_encode_dirs, expected)
     }
 
+    fn create_encode_dir_file(test_path: &str, encode_dir_content_path: &str, session_path: &str) {
+      let encode_file_name = Path::new(test_path).join(session_path).join("encode_dir.txt");
+      let mut encode_file = File::create(&encode_file_name).expect(&format!("Could not create file: {}", encode_file_name.to_string_lossy()));
+      let buf: String = Path::new(test_path).join(encode_dir_content_path).to_string_lossy().to_string();
+      encode_file.write_all(buf.as_bytes()).expect("Could not write encode file content");
+      encode_file.flush().expect("Could not flush encode file write");
+    }
+
     #[test]
     fn gets_movie_to_encode() {
       let test_path = get_source_directory("movie");
@@ -315,6 +329,10 @@ mod tests {
           .into_iter()
           .map(|v| v.sorted_files())
           .collect();
+
+      let encode_dir_content_path = "Encodes/Star Wars - {tvdb-71}";
+
+      create_encode_dir_file(&test_path, encode_dir_content_path, "Rips/session5/renames");
 
       let session_id = SessionId::new("session5");
 
@@ -330,7 +348,7 @@ mod tests {
 
       let movie_encode_dir =
         MovieEncodeDir {
-          path: "data/movie/Encodes/Star Wars - {tvdb-71}".into(),
+          path: format!("{}/{}", &test_path, &encode_dir_content_path).into(),
           session_id: session_id.clone(),
           movie_name: MovieName::new("Star Wars - {tvdb-71}")
         };
